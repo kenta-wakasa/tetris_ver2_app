@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class RenderMino extends CustomPainter {
-  final double basis = 20;
+  final double _basicLength = 20;
+  final int _verticalLength = 20;
+  final int _horizontalLength = 10;
 
   List<List<int>> currentMino = [];
   List<List<int>> futureMino = [];
@@ -13,55 +15,100 @@ class RenderMino extends CustomPainter {
     @required this.fixedMino,
   });
 
-  // 実際の描画処理を行うメソッド
+  /// 座標
+  /// 左上が原点(0, 0)
+  /// x軸は右方向に正
+  /// y軸は下方向に正
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
 
-    // draw fixedMino
+    /// draw fixedMino
     paint.color = Colors.brown;
     fixedMino.forEach(
       (element) {
         canvas.drawRect(
-            Rect.fromLTWH(element[0] * basis, element[1] * basis, basis, basis),
+            Rect.fromLTWH(
+              _basicLength * element[0],
+              _basicLength * element[1],
+              _basicLength,
+              _basicLength,
+            ),
             paint);
       },
     );
+
+    /// draw outer frame
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2.0;
     canvas.drawRect(
-        Rect.fromLTWH(-5.0 * basis, 0, 10 * basis, 20 * basis), paint);
+        Rect.fromLTWH(
+          0,
+          0,
+          _basicLength * _horizontalLength,
+          _basicLength * _verticalLength,
+        ),
+        paint);
+
+    /// draw grid
     paint.strokeWidth = .5;
 
     // draw vertical grid
-    for (int index = -4; index < 5; index++) {
+    for (int index = 0; index < 10; index++) {
       canvas.drawLine(
-          Offset(index * basis, 0), Offset(index * basis, 20 * basis), paint);
-    }
-    // draw horizontal grid
-    for (int index = 1; index < 20; index++) {
-      canvas.drawLine(Offset(-5 * basis, index * basis),
-          Offset(5 * basis, index * basis), paint);
+          Offset(
+            _basicLength * index,
+            0,
+          ),
+          Offset(
+            _basicLength * index,
+            _basicLength * _verticalLength,
+          ),
+          paint);
     }
 
-    // draw currentMino
+    // draw horizontal grid
+    for (int index = 0; index < 20; index++) {
+      canvas.drawLine(
+          Offset(
+            _basicLength * 0,
+            _basicLength * index,
+          ),
+          Offset(
+            _basicLength * _horizontalLength,
+            _basicLength * index,
+          ),
+          paint);
+    }
+
+    /// draw currentMino
     paint.style = PaintingStyle.fill;
     paint.color = Colors.redAccent;
     currentMino.forEach(
       (element) {
         canvas.drawRect(
-            Rect.fromLTWH(element[0] * basis, element[1] * basis, basis, basis),
+            Rect.fromLTWH(
+              _basicLength * element[0],
+              _basicLength * element[1],
+              _basicLength,
+              _basicLength,
+            ),
             paint);
       },
     );
 
-    // draw futureMino
+    /// draw futureMino
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 3;
     futureMino.forEach(
       (element) {
         canvas.drawRect(
-            Rect.fromLTWH(element[0] * basis, element[1] * basis, basis, basis),
+            Rect.fromLTWH(
+              _basicLength * element[0],
+              _basicLength * element[1],
+              _basicLength,
+              _basicLength,
+            ),
             paint);
       },
     );

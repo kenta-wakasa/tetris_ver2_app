@@ -10,6 +10,7 @@ import 'render_mino.dart';
 class PlayPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    /// ジェスチャー操作で使用する変数定義
     final _size = MediaQuery.of(context).size;
     final _centerPos = _size.width / 2;
     final _dragThreshold = 20;
@@ -17,8 +18,10 @@ class PlayPage extends StatelessWidget {
     double _deltaLeft = 0;
     double _deltaRight = 0;
     double _deltaDown = 0;
-    bool _hardDrop = false;
-    bool _holdMino = false;
+    bool _usedHardDrop = false;
+    bool _usedHold = false;
+
+    /// 以下プレイ画面描画
     return ChangeNotifierProvider<PlayModel>(
       create: (_) => PlayModel(),
       child: Consumer<PlayModel>(
@@ -33,24 +36,20 @@ class PlayPage extends StatelessWidget {
             body: Stack(
               children: [
                 /// ジェスチャーによるミノの操作
-                // タップでミノの回転
-                // ドラッグでミノの移動
-                // 下フリックでHardDrop
-                // 上フリックでHoldMino
                 GestureDetector(
                   // ドラッグのスタートをタップした直後に設定
                   dragStartBehavior: DragStartBehavior.down,
 
                   /// タップ時に初期化
                   onPanDown: (_) {
-                    _hardDrop = false;
-                    _holdMino = false;
+                    _usedHardDrop = false;
+                    _usedHold = false;
                     _deltaRight = 0;
                     _deltaLeft = 0;
                     _deltaDown = 0;
                   },
 
-                  /// 回転処理
+                  /// タップで回転処理
                   onTapUp: (details) {
                     if (details.globalPosition.dx < _centerPos) {
                       model.rotateLeft();
@@ -61,7 +60,7 @@ class PlayPage extends StatelessWidget {
 
                   onPanUpdate: (details) {
                     // ドラッグした長さを足し込み閾値を超えると移動する
-                    /// 左右移動
+                    /// ドラッグで左右移動
                     if (details.delta.dx > 0) {
                       _deltaRight += details.delta.dx;
                       if (_dragThreshold < _deltaRight) {
@@ -76,10 +75,10 @@ class PlayPage extends StatelessWidget {
                       }
                     }
 
-                    /// soft drop 処理
+                    /// 下方向ドラッグで soft drop 処理
                     if (details.delta.dy > 0) {
                       _deltaDown += details.delta.dy;
-                      if (_dragThreshold < _deltaDown && !_hardDrop) {
+                      if (_deltaDown > _dragThreshold && !_usedHardDrop) {
                         if (model.wait) {
                         } else {
                           model.moveDown();
@@ -88,16 +87,16 @@ class PlayPage extends StatelessWidget {
                       }
                     }
 
-                    /// hard drop 処理
-                    if (_flickThreshold < details.delta.dy && !_hardDrop) {
-                      _hardDrop = true;
+                    /// 下フリックで hard drop 処理
+                    if (details.delta.dy > _flickThreshold && !_usedHardDrop) {
+                      _usedHardDrop = true;
                       _deltaDown = 0;
                       model.hardDrop();
                     }
 
-                    /// hold 処理
-                    if (-(_flickThreshold) > details.delta.dy && !_holdMino) {
-                      _holdMino = true;
+                    /// 上フリックで hold 処理
+                    if (-details.delta.dy > _flickThreshold && !_usedHold) {
+                      _usedHold = true;
                       _deltaDown = 0;
                       model.holdMino();
                     }
@@ -109,7 +108,7 @@ class PlayPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 40, 16, 0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
                         flex: 1,
@@ -120,15 +119,16 @@ class PlayPage extends StatelessWidget {
                             CustomPaint(
                               painter: RenderHold(
                                 usedHold: model.usedHold,
-                                indexHold: model.indexHold,
+                                indexHold: 0,
                               ),
                             ),
                           ],
                         ),
                       ),
                       Expanded(
-                        flex: 4,
+                        flex: 3,
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(''),
                             CustomPaint(

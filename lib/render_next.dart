@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'mino.dart';
 
 class RenderNext extends CustomPainter {
-  final double basis = 10;
+  final double _basicLength = 10;
+  final int _sideLength = 6;
+  final int _nextLenght = 6; // nextの表示個数
+  final int _xOffset = -2;
+  final int _yOffset = 4;
   List<int> nextMinoList;
   RenderNext({
     @required this.nextMinoList,
@@ -16,20 +20,31 @@ class RenderNext extends CustomPainter {
     paint.color = Colors.brown;
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2.0;
-    for (int index = 0; index < 6; index++) {
+
+    /// draw outer frame
+    for (int index = 0; index < _nextLenght; index++) {
       canvas.drawRect(
-          Rect.fromLTWH(0, index * 6 * basis, 6 * basis, 6 * basis), paint);
+          Rect.fromLTWH(
+            0,
+            _basicLength * index * _sideLength,
+            _basicLength * _sideLength,
+            _basicLength * _sideLength,
+          ),
+          paint);
     }
 
+    /// draw next mino
     paint.style = PaintingStyle.fill;
-
     nextMinoList.asMap().forEach((index, value) {
-      if (-1 < value) {
+      if (value > -1) {
         Mino.mino[value][0].forEach(
           (e) {
             canvas.drawRect(
-                Rect.fromLTWH((3 + e[0]) * basis,
-                    (4 + e[1] + index * 6) * basis, 1 * basis, 1 * basis),
+                Rect.fromLTWH(
+                    _basicLength * (_xOffset + e[0]),
+                    _basicLength * (_yOffset + e[1] + index * _nextLenght),
+                    _basicLength,
+                    _basicLength),
                 paint);
           },
         );

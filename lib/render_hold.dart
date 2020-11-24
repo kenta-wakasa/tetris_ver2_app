@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'mino.dart';
 
 class RenderHold extends CustomPainter {
-  final double basis = 10;
-  int indexHold = 0;
+  final double _basicLength = 10;
+  final int _sideLength = 6;
+  final int _xOffset = -2;
+  final int _yOffset = 4;
+  Set<Point> _mino = {};
+  int indexHold = -1;
   bool usedHold = false;
+
   RenderHold({
     @required this.indexHold,
     @required this.usedHold,
@@ -18,22 +23,38 @@ class RenderHold extends CustomPainter {
     paint.color = Colors.brown;
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2.0;
-    canvas.drawRect(Rect.fromLTWH(0, 0, 6 * basis, 6 * basis), paint);
+    canvas.drawRect(
+      Rect.fromLTWH(
+        0,
+        0,
+        _basicLength * _sideLength,
+        _basicLength * _sideLength,
+      ),
+      paint,
+    );
 
-    // draw holdMino
+    /// draw hold Mino
+    // 一度holdを使った場合は色を変える
     if (usedHold) {
       paint.color = Colors.grey;
     } else {
       paint.color = Colors.brown;
     }
-    if (-1 < indexHold) {
-      paint.style = PaintingStyle.fill;
-      Mino.mino[indexHold][0].forEach((element) {
-        canvas.drawRect(
-            Rect.fromLTWH((3 + element[0]) * basis, (4 + element[1]) * basis,
-                1 * basis, 1 * basis),
-            paint);
-      });
+    paint.style = PaintingStyle.fill;
+    _mino = Mino.getMino(
+      minoType: MinoType.values[indexHold],
+      minoAngle: MinoAngle.Rot_000,
+    );
+    for (final element in _mino) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          _basicLength * (_xOffset + element.x),
+          _basicLength * (_yOffset + element.y),
+          _basicLength,
+          _basicLength,
+        ),
+        paint,
+      );
     }
   }
 
