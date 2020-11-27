@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 enum MinoType {
@@ -17,25 +19,17 @@ enum MinoAngle {
   Rot_270,
 }
 
-class Point {
-  int x = 0;
-  int y = 0;
-  Point({
-    @required this.x,
-    @required this.y,
-  });
-}
-
 class Mino {
   /// typeとangle, x座標とy座標を渡しすと
   /// Minoの現在値を取得できる
-  static Set<Point> getMino({
+  static List<Point> getMino({
     @required MinoType minoType,
-    @required MinoAngle minoAngle,
+    MinoAngle minoAngle = MinoAngle.Rot_000,
     int dx = 0,
     int dy = 0,
   }) {
-    Set<Point> _mino = {};
+    List<Point> _mino = [];
+    List<Point> _minoWithOffset = [];
 
     /// Mino の初期位置を定義する
     /// 図は I_Mino, Rot_000 の場合
@@ -58,36 +52,36 @@ class Mino {
       case MinoType.I_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-              Point(x: 6, y: -1),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -1),
+              Point(5, -1),
+              Point(6, -1),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 4, y: 1),
-            };
+            _mino = [
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, 0),
+              Point(4, 1),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 3, y: 0),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: 0),
-              Point(x: 6, y: 0),
-            };
+            _mino = [
+              Point(3, 0),
+              Point(4, 0),
+              Point(5, 0),
+              Point(6, 0),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(5, -1),
+              Point(5, -1),
+              Point(5, -1),
+              Point(5, -1),
+            ];
             break;
         }
         break;
@@ -96,36 +90,36 @@ class Mino {
       case MinoType.O_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 4, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(4, -1),
+              Point(4, -2),
+              Point(5, -1),
+              Point(5, -2),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 4, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(4, -1),
+              Point(4, -2),
+              Point(5, -1),
+              Point(5, -2),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 4, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(4, -1),
+              Point(4, -2),
+              Point(5, -1),
+              Point(5, -2),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 4, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(4, -1),
+              Point(4, -2),
+              Point(5, -1),
+              Point(5, -2),
+            ];
             break;
         }
         break;
@@ -134,36 +128,36 @@ class Mino {
       case MinoType.T_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -1),
+              Point(4, -2),
+              Point(5, -1),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: -0),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, -0),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 4, y: 0),
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(4, 0),
+              Point(3, -1),
+              Point(4, -1),
+              Point(5, -1),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, 0),
+              Point(5, -1),
+            ];
             break;
         }
         break;
@@ -172,36 +166,36 @@ class Mino {
       case MinoType.J_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 3, y: -2),
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(3, -2),
+              Point(3, -1),
+              Point(4, -1),
+              Point(5, -1),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 3, y: 0),
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-            };
+            _mino = [
+              Point(3, 0),
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, 0),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -1),
+              Point(5, -1),
+              Point(5, -2),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, 0),
+              Point(5, -2),
+            ];
             break;
         }
         break;
@@ -210,36 +204,36 @@ class Mino {
       case MinoType.L_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -1),
+              Point(5, -1),
+              Point(5, -2),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 3, y: -2),
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-            };
+            _mino = [
+              Point(3, -2),
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, 0),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 3, y: 0),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(3, 0),
+              Point(4, -1),
+              Point(5, -1),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: 0),
-            };
+            _mino = [
+              Point(4, -2),
+              Point(4, -1),
+              Point(4, 0),
+              Point(5, 0),
+            ];
             break;
         }
         break;
@@ -248,36 +242,36 @@ class Mino {
       case MinoType.S_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -2),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -2),
+              Point(4, -1),
+              Point(5, -2),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 3, y: -2),
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-            };
+            _mino = [
+              Point(3, -2),
+              Point(3, -1),
+              Point(4, -1),
+              Point(4, 0),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 3, y: 0),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(3, 0),
+              Point(4, -1),
+              Point(4, 0),
+              Point(5, -1),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-              Point(x: 4, y: 0),
-            };
+            _mino = [
+              Point(4, -2),
+              Point(4, -1),
+              Point(5, -1),
+              Point(4, 0),
+            ];
             break;
         }
         break;
@@ -286,41 +280,41 @@ class Mino {
       case MinoType.Z_Mino:
         switch (minoAngle) {
           case MinoAngle.Rot_000:
-            _mino = {
-              Point(x: 3, y: -2),
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(3, -2),
+              Point(4, -2),
+              Point(4, -1),
+              Point(5, -1),
+            ];
             break;
           case MinoAngle.Rot_090:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 3, y: 0),
-              Point(x: 4, y: -2),
-              Point(x: 4, y: -1),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(3, 0),
+              Point(4, -2),
+              Point(4, -1),
+            ];
             break;
           case MinoAngle.Rot_180:
-            _mino = {
-              Point(x: 3, y: -1),
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: 0),
-            };
+            _mino = [
+              Point(3, -1),
+              Point(4, -1),
+              Point(4, 0),
+              Point(5, 0),
+            ];
             break;
           case MinoAngle.Rot_270:
-            _mino = {
-              Point(x: 4, y: -1),
-              Point(x: 4, y: 0),
-              Point(x: 5, y: -2),
-              Point(x: 5, y: -1),
-            };
+            _mino = [
+              Point(4, -1),
+              Point(4, 0),
+              Point(5, -2),
+              Point(5, -1),
+            ];
             break;
         }
         break;
 
-      /// どれでもない場合はnullを返す
+      /// どれでもない場合
       default:
         return _mino;
         break;
@@ -328,10 +322,9 @@ class Mino {
 
     /// オフセットを指定
     for (final Point element in _mino) {
-      element.x += dx;
-      element.y += dy;
+      _minoWithOffset.add(Point(element.x + dx, element.y + dy));
     }
-    return _mino;
+    return _minoWithOffset;
   }
 
   static const List<Map<int, List<List<int>>>> mino = [

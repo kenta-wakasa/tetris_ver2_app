@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class RenderMino extends CustomPainter {
@@ -5,15 +7,28 @@ class RenderMino extends CustomPainter {
   final int _verticalLength = 20;
   final int _horizontalLength = 10;
 
-  List<List<int>> currentMino = [];
-  List<List<int>> futureMino = [];
-  List<List<int>> fixedMino = [];
+  List<Point> currentMino = [];
+  List<Point> futureMino = [];
+  List<Point> fixedMino = [];
 
   RenderMino({
     @required this.currentMino,
     @required this.futureMino,
     @required this.fixedMino,
   });
+
+  void _paintMino(Canvas canvas, Paint paint, List<Point> mino) {
+    for (final Point point in mino) {
+      canvas.drawRect(
+          Rect.fromLTWH(
+            _basicLength * point.x,
+            _basicLength * point.y,
+            _basicLength,
+            _basicLength,
+          ),
+          paint);
+    }
+  }
 
   /// 座標
   /// 左上が原点(0, 0)
@@ -25,18 +40,7 @@ class RenderMino extends CustomPainter {
 
     /// draw fixedMino
     paint.color = Colors.brown;
-    fixedMino.forEach(
-      (element) {
-        canvas.drawRect(
-            Rect.fromLTWH(
-              _basicLength * element[0],
-              _basicLength * element[1],
-              _basicLength,
-              _basicLength,
-            ),
-            paint);
-      },
-    );
+    _paintMino(canvas, paint, fixedMino);
 
     /// draw outer frame
     paint.style = PaintingStyle.stroke;
@@ -84,34 +88,12 @@ class RenderMino extends CustomPainter {
     /// draw currentMino
     paint.style = PaintingStyle.fill;
     paint.color = Colors.redAccent;
-    currentMino.forEach(
-      (element) {
-        canvas.drawRect(
-            Rect.fromLTWH(
-              _basicLength * element[0],
-              _basicLength * element[1],
-              _basicLength,
-              _basicLength,
-            ),
-            paint);
-      },
-    );
+    _paintMino(canvas, paint, currentMino);
 
     /// draw futureMino
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 3;
-    futureMino.forEach(
-      (element) {
-        canvas.drawRect(
-            Rect.fromLTWH(
-              _basicLength * element[0],
-              _basicLength * element[1],
-              _basicLength,
-              _basicLength,
-            ),
-            paint);
-      },
-    );
+    _paintMino(canvas, paint, futureMino);
   }
 
   // 再描画のタイミングで呼ばれるメソッド

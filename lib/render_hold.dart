@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'mino.dart';
 
@@ -6,7 +8,7 @@ class RenderHold extends CustomPainter {
   final int _sideLength = 6;
   final int _xOffset = -2;
   final int _yOffset = 4;
-  Set<Point> _mino = {};
+  List<Point> _minoList = [];
   int indexHold = -1;
   bool usedHold = false;
 
@@ -41,11 +43,14 @@ class RenderHold extends CustomPainter {
       paint.color = Colors.brown;
     }
     paint.style = PaintingStyle.fill;
-    _mino = Mino.getMino(
-      minoType: MinoType.values[indexHold],
-      minoAngle: MinoAngle.Rot_000,
-    );
-    for (final element in _mino) {
+    try {
+      _minoList = Mino.getMino(
+        minoType: MinoType.values[indexHold],
+      );
+    } on RangeError catch (e) {
+      // print('登録されていないMinoタイプです。');
+    }
+    for (final element in _minoList) {
       canvas.drawRect(
         Rect.fromLTWH(
           _basicLength * (_xOffset + element.x),

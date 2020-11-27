@@ -1,11 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'play_model.dart';
 import 'render_hold.dart';
 import 'render_next.dart';
-import 'start_page.dart';
 import 'render_mino.dart';
+import 'start_page.dart';
 
 class PlayPage extends StatelessWidget {
   @override
@@ -15,13 +17,13 @@ class PlayPage extends StatelessWidget {
     final _centerPos = _size.width / 2;
     final _dragThreshold = 20;
     final _flickThreshold = 30;
+    final fps = 30;
     double _deltaLeft = 0;
     double _deltaRight = 0;
     double _deltaDown = 0;
     bool _usedHardDrop = false;
     bool _usedHold = false;
 
-    /// 以下プレイ画面描画
     return ChangeNotifierProvider<PlayModel>(
       create: (_) => PlayModel(),
       child: Consumer<PlayModel>(
@@ -35,6 +37,24 @@ class PlayPage extends StatelessWidget {
             ),
             body: Stack(
               children: [
+                /// カウントダウン画面
+                model.count > -1
+                    ? Container(
+                        color: Colors.brown.withOpacity(0.2),
+                        child: Center(
+                          child: Text(
+                            // 0以外なら数字を 0ならGO!! を表示
+                            model.count != 0 ? "${model.count}" : 'GO!!',
+                            style: TextStyle(
+                              fontSize: 100,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.brown[900],
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(),
+
                 /// ジェスチャーによるミノの操作
                 GestureDetector(
                   // ドラッグのスタートをタップした直後に設定
@@ -53,8 +73,10 @@ class PlayPage extends StatelessWidget {
                   onTapUp: (details) {
                     if (details.globalPosition.dx < _centerPos) {
                       model.rotateLeft();
+                      model.mainLoop(fps);
                     } else {
                       model.rotateRight();
+                      model.isGrounded = !model.isGrounded;
                     }
                   },
 
@@ -105,11 +127,14 @@ class PlayPage extends StatelessWidget {
                     color: Colors.white.withOpacity(0),
                   ),
                 ),
+
+                /// 描画部分
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 40, 16, 0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      /// HOLDの描画
                       Expanded(
                         flex: 1,
                         child: Column(
@@ -119,28 +144,32 @@ class PlayPage extends StatelessWidget {
                             CustomPaint(
                               painter: RenderHold(
                                 usedHold: model.usedHold,
-                                indexHold: 0,
+                                indexHold: 1,
                               ),
                             ),
                           ],
                         ),
                       ),
+
+                      /// Playエリアの描画
                       Expanded(
                         flex: 3,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(''),
+                            Text("${model.countFrameForDropMino}"),
                             CustomPaint(
                               painter: RenderMino(
                                 currentMino: model.currentMino,
-                                futureMino: model.futureMino,
-                                fixedMino: model.fixedMino,
+                                futureMino: [Point(0, 0)],
+                                fixedMino: [Point(0, 0)],
                               ),
                             ),
                           ],
                         ),
                       ),
+
+                      /// NEXTの描画
                       Expanded(
                         flex: 1,
                         child: Column(
@@ -158,6 +187,8 @@ class PlayPage extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                /// 消したラインの数を表示
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Column(
@@ -174,6 +205,8 @@ class PlayPage extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                /// GameOver画面
                 model.gameOver
                     ? Center(
                         child: Container(
@@ -215,7 +248,7 @@ class PlayPage extends StatelessWidget {
                                   ),
                                   onPressed: () {
                                     model.reset();
-                                    model.countDown();
+                                    model.mainLoop(fps);
                                   },
                                 ),
                               ),
@@ -248,21 +281,6 @@ class PlayPage extends StatelessWidget {
                                 height: 56,
                               ),
                             ],
-                          ),
-                        ),
-                      )
-                    : Container(),
-                model.count > -1
-                    ? Container(
-                        color: Colors.brown.withOpacity(0.2),
-                        child: Center(
-                          child: Text(
-                            model.count != 0 ? model.count.toString() : 'GO!!',
-                            style: TextStyle(
-                              fontSize: 100,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown[900],
-                            ),
                           ),
                         ),
                       )
