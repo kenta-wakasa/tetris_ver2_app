@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +23,7 @@ class PlayPage extends StatelessWidget {
     bool _usedHold = false;
 
     return ChangeNotifierProvider<PlayModel>(
-      create: (_) => PlayModel(),
+      create: (_) => PlayModel()..mainLoop(fps),
       child: Consumer<PlayModel>(
         builder: (context, model, child) {
           return Scaffold(
@@ -81,10 +79,7 @@ class PlayPage extends StatelessWidget {
                     if (details.delta.dy > 0) {
                       _deltaDown += details.delta.dy;
                       if (_deltaDown > _dragThreshold && !_usedHardDrop) {
-                        if (model.wait) {
-                        } else {
-                          model.moveMino(0, 1);
-                        }
+                        model.moveMino(0, 1);
                         _deltaDown = 0;
                       }
                     }
@@ -124,7 +119,7 @@ class PlayPage extends StatelessWidget {
                             CustomPaint(
                               painter: RenderHold(
                                 usedHold: model.usedHold,
-                                indexHold: 1,
+                                indexHold: model.minoTypeInHold,
                               ),
                             ),
                           ],
@@ -137,7 +132,7 @@ class PlayPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("${model.frameCountForDropMino}"),
+                            Text(""),
                             CustomPaint(
                               painter: RenderMino(
                                 currentMino: model.currentMino,
@@ -158,7 +153,7 @@ class PlayPage extends StatelessWidget {
                             Text('NEXT'),
                             CustomPaint(
                               painter: RenderNext(
-                                nextMinoList: model.nextMinoList,
+                                nextMinoList: model.minoTypeNextList,
                               ),
                             ),
                           ],
@@ -169,13 +164,15 @@ class PlayPage extends StatelessWidget {
                 ),
 
                 /// カウントダウン画面
-                model.count > -1
+                model.countDownNum > -1
                     ? Container(
                         color: Colors.brown.withOpacity(0.2),
                         child: Center(
                           child: Text(
                             // 0以外なら数字を 0ならGO!! を表示
-                            model.count != 0 ? "${model.count}" : 'GO!!',
+                            model.countDownNum != 0
+                                ? "${model.countDownNum}"
+                                : 'GO!!',
                             style: TextStyle(
                               fontSize: 100,
                               fontWeight: FontWeight.bold,
@@ -192,22 +189,8 @@ class PlayPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      RaisedButton(
-                        child: Text(
-                          model.mainLoopIsCancelled ? 'スタート' : 'ストップ',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                        onPressed: () {
-                          if (model.mainLoopIsCancelled) {
-                            model.mainLoop(fps);
-                          } else {
-                            model.mainLoopIsCancelled = true;
-                          }
-                        },
-                      ),
                       Text(
-                        model.countDeletedLine.toString(),
+                        model.deletedLineCount.toString(),
                         style: TextStyle(
                             fontSize: 32, fontWeight: FontWeight.bold),
                       ),
@@ -238,7 +221,7 @@ class PlayPage extends StatelessWidget {
                                 height: 24,
                               ),
                               Text(
-                                '${model.countDeletedLine}ライン達成!!',
+                                '${model.deletedLineCount}ライン達成!!',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -259,7 +242,6 @@ class PlayPage extends StatelessWidget {
                                     ),
                                   ),
                                   onPressed: () {
-                                    model.reset();
                                     model.mainLoop(fps);
                                   },
                                 ),
@@ -279,7 +261,6 @@ class PlayPage extends StatelessWidget {
                                     ),
                                   ),
                                   onPressed: () {
-                                    model.reset();
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
