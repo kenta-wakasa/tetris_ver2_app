@@ -12,7 +12,7 @@ import 'start_page.dart';
 class PlayPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    /// ジェスチャー操作で使用する変数定義
+    /// ジェスチャー操作で使用する変数を定義
     final _size = MediaQuery.of(context).size;
     final _centerPos = _size.width / 2;
     final _dragThreshold = 20;
@@ -37,24 +37,6 @@ class PlayPage extends StatelessWidget {
             ),
             body: Stack(
               children: [
-                /// カウントダウン画面
-                model.count > -1
-                    ? Container(
-                        color: Colors.brown.withOpacity(0.2),
-                        child: Center(
-                          child: Text(
-                            // 0以外なら数字を 0ならGO!! を表示
-                            model.count != 0 ? "${model.count}" : 'GO!!',
-                            style: TextStyle(
-                              fontSize: 100,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown[900],
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(),
-
                 /// ジェスチャーによるミノの操作
                 GestureDetector(
                   // ドラッグのスタートをタップした直後に設定
@@ -72,12 +54,9 @@ class PlayPage extends StatelessWidget {
                   /// タップで回転処理
                   onTapUp: (details) {
                     if (details.globalPosition.dx < _centerPos) {
-                      model.rotateLeft();
-                      model.mainLoop(fps);
+                      model.rotateAntiClockwise();
                     } else {
-                      model.rotateRight();
-                      model.currentMinoIsGrounding =
-                          !model.currentMinoIsGrounding;
+                      model.rotateClockwise();
                     }
                   },
 
@@ -87,13 +66,13 @@ class PlayPage extends StatelessWidget {
                     if (details.delta.dx > 0) {
                       _deltaRight += details.delta.dx;
                       if (_dragThreshold < _deltaRight) {
-                        model.moveRight();
+                        model.moveMino(1, 0);
                         _deltaRight = 0;
                       }
                     } else {
                       _deltaLeft += details.delta.dx.abs();
                       if (_dragThreshold < _deltaLeft) {
-                        model.moveLeft();
+                        model.moveMino(-1, 0);
                         _deltaLeft = 0;
                       }
                     }
@@ -104,7 +83,7 @@ class PlayPage extends StatelessWidget {
                       if (_deltaDown > _dragThreshold && !_usedHardDrop) {
                         if (model.wait) {
                         } else {
-                          model.moveDown();
+                          model.moveMino(0, 1);
                         }
                         _deltaDown = 0;
                       }
@@ -158,7 +137,7 @@ class PlayPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("${model.countFrameForDropMino}"),
+                            Text("${model.frameCountForDropMino}"),
                             CustomPaint(
                               painter: RenderMino(
                                 currentMino: model.currentMino,
@@ -189,12 +168,44 @@ class PlayPage extends StatelessWidget {
                   ),
                 ),
 
+                /// カウントダウン画面
+                model.count > -1
+                    ? Container(
+                        color: Colors.brown.withOpacity(0.2),
+                        child: Center(
+                          child: Text(
+                            // 0以外なら数字を 0ならGO!! を表示
+                            model.count != 0 ? "${model.count}" : 'GO!!',
+                            style: TextStyle(
+                              fontSize: 100,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.brown[900],
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(),
+
                 /// 消したラインの数を表示
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      RaisedButton(
+                        child: Text(
+                          model.mainLoopIsCancelled ? 'スタート' : 'ストップ',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          if (model.mainLoopIsCancelled) {
+                            model.mainLoop(fps);
+                          } else {
+                            model.mainLoopIsCancelled = true;
+                          }
+                        },
+                      ),
                       Text(
                         model.countDeletedLine.toString(),
                         style: TextStyle(

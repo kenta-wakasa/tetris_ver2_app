@@ -77,10 +77,10 @@ class Mino {
             break;
           case MinoAngle.Rot_270:
             _mino = [
+              Point(5, -2),
               Point(5, -1),
-              Point(5, -1),
-              Point(5, -1),
-              Point(5, -1),
+              Point(5, 0),
+              Point(5, 1),
             ];
             break;
         }
@@ -186,7 +186,7 @@ class Mino {
               Point(3, -1),
               Point(4, -1),
               Point(5, -1),
-              Point(5, -2),
+              Point(5, 0),
             ];
             break;
           case MinoAngle.Rot_270:
@@ -270,7 +270,7 @@ class Mino {
               Point(4, -2),
               Point(4, -1),
               Point(5, -1),
-              Point(4, 0),
+              Point(5, 0),
             ];
             break;
         }

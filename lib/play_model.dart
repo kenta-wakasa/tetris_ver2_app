@@ -23,11 +23,11 @@ class PlayModel extends ChangeNotifier {
   List<Point> futureMino = [];
   List<Point> fixedMino = [];
 
-  int countFrameForDropMino = 0;
-  int countFrameForLockMino = 0;
+  int frameCountForDropMino = 0;
+  int frameCountForFixCurrentMino = 0;
   bool currentMinoIsGrounding = false; // ミノが接地しているか
   bool minoIsMoving = false;
-  bool mainLoopIsCancelled = false;
+  bool mainLoopIsCancelled = true;
   List<int> minoOrderList = [];
   int minoOrderIndex = 0;
   final _numGenerateMino = 7000; // はじめに生成するミノの個数
@@ -48,12 +48,14 @@ class PlayModel extends ChangeNotifier {
   /// frameごとに処理を実行する
   Future<void> mainLoop(int fps) async {
     /// 初期化処理
+    mainLoopIsCancelled = false;
+    frameCountForDropMino = 0;
+    frameCountForFixCurrentMino = 0;
     fixedMino.clear();
     currentMino.clear();
     futureMino.clear();
-    mainLoopIsCancelled = false;
-    countFrameForDropMino = 0;
-    _generateMinoIndexList();
+
+    _generateMinoOrderList(); // ミノの順番を予め生成する
     await _countDown();
     _generateMino();
 
@@ -64,41 +66,36 @@ class PlayModel extends ChangeNotifier {
     while (!mainLoopIsCancelled) {
       frame++;
 
-      /// テストために100フレーム目で停止させる。
-      if (frame == 500) {
-        mainLoopIsCancelled = true;
-      }
-
       /// ミノが接地していないなら1秒後に落下させる
       if (!currentMinoIsGrounding) {
-        countFrameForDropMino++;
-        if (countFrameForDropMino % (fps * 0.5) == 0) {
+        frameCountForDropMino++;
+        if (frameCountForDropMino % (fps * 1) == 0) {
           moveMino(0, 1);
         }
-        countFrameForLockMino = 0;
+        frameCountForFixCurrentMino = 0;
       } else {
         /// 以下の条件を満たすときミノを固定する
         /// 1: ミノが接地している
         /// 2: 0.5秒間プレイヤーの操作がない
         if (!minoIsMoving) {
-          countFrameForLockMino++;
-          if (countFrameForLockMino % (fps * 0.5).toInt() == 0) {
+          frameCountForFixCurrentMino++;
+          if (frameCountForFixCurrentMino % (fps * 0.5).toInt() == 0) {
             _fixCurrentMino();
             _generateMino();
           }
         } else {
-          countFrameForLockMino = 0;
+          frameCountForFixCurrentMino = 0;
           minoIsMoving = false;
         }
-        countFrameForDropMino = 0;
+        frameCountForDropMino = 0;
       }
 
       var next = 1000000 * frame ~/ fps;
       await Future.delayed(
         Duration(microseconds: next - sw.elapsedMicroseconds),
       );
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   /// 新しいミノを生成する
@@ -112,7 +109,7 @@ class PlayModel extends ChangeNotifier {
   }
 
   /// [_numGenerateMino]の数だけミノリスト生成する
-  void _generateMinoIndexList() {
+  void _generateMinoOrderList() {
     while (minoOrderList.length < _numGenerateMino) {
       final seedMinoIndexList = [0, 1, 2, 3, 4, 5, 6];
       seedMinoIndexList.shuffle();
@@ -121,9 +118,10 @@ class PlayModel extends ChangeNotifier {
   }
 
   // 現在の位置から与えられた dx, dy だけ移動する
-  void moveMino(int dx, int dy) {
+  // 移動できた場合は true を返す
+  bool moveMino(int dx, int dy) {
     // 衝突判定のための一時変数
-    List<Point> tmpMino = Mino.getMino(
+    final List<Point> tmpMino = Mino.getMino(
       minoType: MinoType.values[currentMinoType],
       minoAngle: MinoAngle.values[currentMinoAngle],
       dx: currentMinoXPos + dx,
@@ -135,6 +133,9 @@ class PlayModel extends ChangeNotifier {
       currentMinoXPos += dx;
       currentMinoYPos += dy;
       _updateCurrentMino();
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -156,6 +157,7 @@ class PlayModel extends ChangeNotifier {
     );
     _findDropPos(); // 落下位置の取得
     _checkCurrentMinoIsGrounding(); // 接地判定
+    notifyListeners();
   }
 
   /// ゲーム開始時のカウントダウンを行う
@@ -194,7 +196,7 @@ class PlayModel extends ChangeNotifier {
   /// currentMino の接地判定
   void _checkCurrentMinoIsGrounding() {
     // currentMinoYPos + 1 が衝突しているかを調べる
-    List<Point> tmpMino = Mino.getMino(
+    final List<Point> tmpMino = Mino.getMino(
       minoType: MinoType.values[currentMinoType],
       minoAngle: MinoAngle.values[currentMinoAngle],
       dx: currentMinoXPos,
@@ -211,7 +213,7 @@ class PlayModel extends ChangeNotifier {
   void _findDropPos() {
     // ひとつずつ currentMino を下げて 衝突するかを調べる
     for (int dy = 1; dy <= _verticalLength + 1; dy++) {
-      List<Point> tmpMino = Mino.getMino(
+      final List<Point> tmpMino = Mino.getMino(
         minoType: MinoType.values[currentMinoType],
         minoAngle: MinoAngle.values[currentMinoAngle],
         dx: currentMinoXPos,
@@ -228,6 +230,168 @@ class PlayModel extends ChangeNotifier {
         return;
       }
     }
+  }
+
+  /// 時計回りに90度回転
+  void rotateClockwise() {
+    final int tmpAngle = currentMinoAngle; // 回転前の角度を一時的に保持する
+    currentMinoAngle = (currentMinoAngle + 3) % 4; // 反時計回りに270度回転と同義
+    final List<Point> tmpMino = Mino.getMino(
+      minoType: MinoType.values[currentMinoType],
+      minoAngle: MinoAngle.values[currentMinoAngle],
+      dx: currentMinoXPos,
+      dy: currentMinoYPos,
+    );
+
+    /// 回転したとき他の障害部に当たった場合
+    /// SRS(スーパーローテーションシステム)に従いミノを移動させる
+    /// 参考: https://tetrisch.github.io/main/srs.html
+    if (_onCollisionEnter(tmpMino)) {
+      /// I_Mino の場合
+      if (currentMinoType == MinoType.I_Mino.index) {
+        // angleで分岐
+        switch (MinoAngle.values[currentMinoAngle]) {
+          case MinoAngle.Rot_000:
+            if (moveMino(-2, 0)) return;
+            if (moveMino(1, 0)) return;
+            if (moveMino(1, 2)) return;
+            if (moveMino(-2, -1)) return;
+            break;
+          case MinoAngle.Rot_090:
+            if (moveMino(2, 0)) return;
+            if (moveMino(-1, 0)) return;
+            if (moveMino(2, -1)) return;
+            if (moveMino(-1, 2)) return;
+            break;
+          case MinoAngle.Rot_180:
+            if (moveMino(-1, 0)) return;
+            if (moveMino(2, 0)) return;
+            if (moveMino(-1, -2)) return;
+            if (moveMino(2, -1)) return;
+            break;
+          case MinoAngle.Rot_270:
+            if (moveMino(2, 0)) return;
+            if (moveMino(-1, 0)) return;
+            if (moveMino(2, 1)) return;
+            if (moveMino(1, -2)) return;
+            break;
+        }
+
+        /// I_Mino 以外
+      } else {
+        // angleで分岐
+        switch (MinoAngle.values[currentMinoAngle]) {
+          case MinoAngle.Rot_000:
+            if (moveMino(-1, 0)) return;
+            if (moveMino(-1, 1)) return;
+            if (moveMino(0, -2)) return;
+            if (moveMino(-1, -2)) return;
+            break;
+          case MinoAngle.Rot_090:
+            if (moveMino(1, 0)) return;
+            if (moveMino(1, -1)) return;
+            if (moveMino(0, 2)) return;
+            if (moveMino(1, 2)) return;
+            break;
+          case MinoAngle.Rot_180:
+            if (moveMino(1, 0)) return;
+            if (moveMino(1, 1)) return;
+            if (moveMino(0, -2)) return;
+            if (moveMino(1, -2)) return;
+            break;
+          case MinoAngle.Rot_270:
+            if (moveMino(-1, 0)) return;
+            if (moveMino(-1, -1)) return;
+            if (moveMino(0, 2)) return;
+            if (moveMino(-1, 2)) return;
+            break;
+        }
+      }
+      // どこにも動かせなかった場合角度を戻す
+      currentMinoAngle = tmpAngle;
+    }
+    _updateCurrentMino();
+  }
+
+  /// 反時計回りに90度回転
+  void rotateAntiClockwise() {
+    final int tmpAngle = currentMinoAngle; // 回転前の角度を一時的に保持する
+    currentMinoAngle = (currentMinoAngle + 1) % 4; // 反時計回りに270度回転と同義
+    final List<Point> tmpMino = Mino.getMino(
+      minoType: MinoType.values[currentMinoType],
+      minoAngle: MinoAngle.values[currentMinoAngle],
+      dx: currentMinoXPos,
+      dy: currentMinoYPos,
+    );
+
+    /// 回転したとき他の障害部に当たった場合
+    /// SRS(スーパーローテーションシステム)に従いミノを移動させる
+    /// 参考: https://tetrisch.github.io/main/srs.html
+    if (_onCollisionEnter(tmpMino)) {
+      /// I_Mino の場合
+      if (currentMinoType == MinoType.I_Mino.index) {
+        // angleで分岐
+        switch (MinoAngle.values[currentMinoAngle]) {
+          case MinoAngle.Rot_000:
+            if (moveMino(2, 0)) return;
+            if (moveMino(-1, 0)) return;
+            if (moveMino(2, -1)) return;
+            if (moveMino(-1, 2)) return;
+            break;
+          case MinoAngle.Rot_090:
+            if (moveMino(-1, 0)) return;
+            if (moveMino(2, 0)) return;
+            if (moveMino(-1, -2)) return;
+            if (moveMino(2, 1)) return;
+            break;
+          case MinoAngle.Rot_180:
+            if (moveMino(1, 0)) return;
+            if (moveMino(-2, 0)) return;
+            if (moveMino(-2, 1)) return;
+            if (moveMino(1, -2)) return;
+            break;
+          case MinoAngle.Rot_270:
+            if (moveMino(1, 0)) return;
+            if (moveMino(-2, 0)) return;
+            if (moveMino(1, 2)) return;
+            if (moveMino(-2, -1)) return;
+            break;
+        }
+
+        /// I_Mino 以外
+      } else {
+        // angleで分岐
+        switch (MinoAngle.values[currentMinoAngle]) {
+          case MinoAngle.Rot_000:
+            if (moveMino(1, 0)) return;
+            if (moveMino(1, 1)) return;
+            if (moveMino(0, -2)) return;
+            if (moveMino(1, -2)) return;
+            break;
+          case MinoAngle.Rot_090:
+            if (moveMino(1, 0)) return;
+            if (moveMino(1, -1)) return;
+            if (moveMino(0, 2)) return;
+            if (moveMino(1, 2)) return;
+            break;
+          case MinoAngle.Rot_180:
+            if (moveMino(-1, 0)) return;
+            if (moveMino(-1, 1)) return;
+            if (moveMino(0, -2)) return;
+            if (moveMino(-1, -2)) return;
+            break;
+          case MinoAngle.Rot_270:
+            if (moveMino(-1, 0)) return;
+            if (moveMino(-1, -1)) return;
+            if (moveMino(0, 2)) return;
+            if (moveMino(-1, 2)) return;
+            break;
+        }
+      }
+      // どこにも動かせなかった場合角度を戻す
+      currentMinoAngle = tmpAngle;
+    }
+    _updateCurrentMino();
   }
 
   reset() {
@@ -250,91 +414,6 @@ class PlayModel extends ChangeNotifier {
     // notifyListeners();
   }
 
-  moveLeft() {
-    // xPos -= 1;
-    // _updateCurrentMino();
-    // if (_onCollisionEnter(currentMino)) {
-    //   xPos += 1;
-    //   _updateCurrentMino();
-    // }
-    // _verifyGround();
-    // notifyListeners();
-  }
-
-  moveRight() {
-    // xPos += 1;
-    // _updateCurrentMino();
-    // if (_onCollisionEnter(currentMino)) {
-    //   xPos -= 1;
-    //   _updateCurrentMino();
-    // }
-    // _verifyGround();
-    // notifyListeners();
-  }
-
-  moveDown() {
-    // // まず設置しているかを判定する。
-    // yPos += 1;
-    // _updateCurrentMino();
-    // _verifyGround();
-    // notifyListeners();
-  }
-
-  // 接地していたらwaitTimerを起動しtrueを返す
-  bool _verifyGround() {
-    // bool _ground = false;
-    // _waitTimer?.cancel();
-    // yPos++;
-    // _updateCurrentMino();
-    // // 設置していたら0.5秒間の待ち時間を起動する
-    // if (_onCollisionEnter(currentMino)) {
-    //   groundCount++;
-    //   // 回転と移動操作があった場合は待ち時間をリセットする
-    //   // ただし15回まで
-    //   if (groundCount < 16) {
-    //     _mainTimer?.cancel();
-    //     wait = true;
-    //     startWaitTime();
-    //   } else {
-    //     yPos--;
-    //     _updateCurrentMino();
-    //     for (List<int> e in currentMino) {
-    //       fixedMino.add([e[0], e[1]]);
-    //     }
-    //     _deleteMino();
-    //     wait = false;
-    //     _waitTimer?.cancel();
-    //     _generateMino();
-    //     _gameOver();
-    //     return true;
-    //   }
-    //   _ground = true;
-    // } else {
-    //   wait = false;
-    //   _startMain();
-    // }
-    // yPos--;
-    // _updateCurrentMino();
-    // return _ground;
-  }
-
-  bool moveXY(int dx, int dy) {
-    // xPos += dx;
-    // yPos += dy;
-    // _updateCurrentMino();
-    // if (_onCollisionEnter(currentMino)) {
-    //   xPos -= dx;
-    //   yPos -= dy;
-    //   _updateCurrentMino();
-    //   notifyListeners();
-    //   return false;
-    // } else {
-    //   _verifyGround();
-    //   notifyListeners();
-    //   return true;
-    // }
-  }
-
   rotateLeft() {
     //   final _temporaryAngle = angle;
     //   angle = (angle + (1 * 90)) % 360;
@@ -347,57 +426,57 @@ class PlayModel extends ChangeNotifier {
     //     if (indexMino == 0) {
     //       // angleで分岐
     //       switch (angle) {
-    //         case 0:
-    //           if (moveXY(2, 0)) return;
-    //           if (moveXY(-1, 0)) return 0;
-    //           if (moveXY(2, -1)) return 0;
-    //           if (moveXY(-1, 2)) return 0;
+    //         case MinoAngle.Rot_000:
+    //           if (moveMino(2, 0)) return;
+    //           if (moveMino(-1, 0)) return;
+    //           if (moveMino(2, -1)) return;
+    //           if (moveMino(-1, 2)) return;
     //           break;
-    //         case 90:
-    //           if (moveXY(-1, 0)) return 0;
-    //           if (moveXY(2, 0)) return 0;
-    //           if (moveXY(-1, -2)) return 0;
-    //           if (moveXY(2, 1)) return 0;
+    //         case MinoAngle.Rot_090:
+    //           if (moveMino(-1, 0)) return;
+    //           if (moveMino(2, 0)) return;
+    //           if (moveMino(-1, -2)) return;
+    //           if (moveMino(2, 1)) return;
     //           break;
-    //         case 180:
-    //           if (moveXY(1, 0)) return 0;
-    //           if (moveXY(-2, 0)) return 0;
-    //           if (moveXY(-2, 1)) return 0;
-    //           if (moveXY(1, -2)) return 0;
+    //         case MinoAngle.Rot_180:
+    //           if (moveMino(1, 0)) return;
+    //           if (moveMino(-2, 0)) return;
+    //           if (moveMino(-2, 1)) return;
+    //           if (moveMino(1, -2)) return;
     //           break;
-    //         case 270:
-    //           if (moveXY(1, 0)) return 0;
-    //           if (moveXY(-2, 0)) return 0;
-    //           if (moveXY(1, 2)) return 0;
-    //           if (moveXY(-2, -1)) return 0;
+    //         case MinoAngle.Rot_270:
+    //           if (moveMino(1, 0)) return;
+    //           if (moveMino(-2, 0)) return;
+    //           if (moveMino(1, 2)) return;
+    //           if (moveMino(-2, -1)) return;
     //           break;
     //       }
     //     } else {
     //       // angleで分岐
     //       switch (angle) {
-    //         case 0:
-    //           if (moveXY(1, 0)) return;
-    //           if (moveXY(1, 1)) return 0;
-    //           if (moveXY(0, -2)) return 0;
-    //           if (moveXY(1, -2)) return 0;
+    //         case MinoAngle.Rot_000:
+    //           if (moveMino(1, 0)) return;
+    //           if (moveMino(1, 1)) return;
+    //           if (moveMino(0, -2)) return;
+    //           if (moveMino(1, -2)) return;
     //           break;
-    //         case 90:
-    //           if (moveXY(1, 0)) return 0;
-    //           if (moveXY(1, -1)) return 0;
-    //           if (moveXY(0, 2)) return 0;
-    //           if (moveXY(1, 2)) return 0;
+    //         case MinoAngle.Rot_090:
+    //           if (moveMino(1, 0)) return;
+    //           if (moveMino(1, -1)) return;
+    //           if (moveMino(0, 2)) return;
+    //           if (moveMino(1, 2)) return;
     //           break;
-    //         case 180:
-    //           if (moveXY(-1, 0)) return 0;
-    //           if (moveXY(-1, 1)) return 0;
-    //           if (moveXY(0, -2)) return 0;
-    //           if (moveXY(-1, -2)) return 0;
+    //         case MinoAngle.Rot_180:
+    //           if (moveMino(-1, 0)) return;
+    //           if (moveMino(-1, 1)) return;
+    //           if (moveMino(0, -2)) return;
+    //           if (moveMino(-1, -2)) return;
     //           break;
-    //         case 270:
-    //           if (moveXY(-1, 0)) return 0;
-    //           if (moveXY(-1, -1)) return 0;
-    //           if (moveXY(0, 2)) return 0;
-    //           if (moveXY(-1, 2)) return 0;
+    //         case MinoAngle.Rot_270:
+    //           if (moveMino(-1, 0)) return;
+    //           if (moveMino(-1, -1)) return;
+    //           if (moveMino(0, 2)) return;
+    //           if (moveMino(-1, 2)) return;
     //           break;
     //       }
     //     }
@@ -424,57 +503,57 @@ class PlayModel extends ChangeNotifier {
     //   if (indexMino == 0) {
     //     // angleで分岐
     //     switch (angle) {
-    //       case 0:
-    //         if (moveXY(-2, 0)) return 0;
-    //         if (moveXY(1, 0)) return 0;
-    //         if (moveXY(1, 2)) return 0;
-    //         if (moveXY(-2, -1)) return 0;
+    //       case MinoAngle.Rot_000:
+    //         if (moveMino(-2, 0)) return;
+    //         if (moveMino(1, 0)) return;
+    //         if (moveMino(1, 2)) return;
+    //         if (moveMino(-2, -1)) return;
     //         break;
-    //       case 90:
-    //         if (moveXY(2, 0)) return 0;
-    //         if (moveXY(-1, 0)) return 0;
-    //         if (moveXY(2, -1)) return 0;
-    //         if (moveXY(-1, 2)) return 0;
+    //       case MinoAngle.Rot_090:
+    //         if (moveMino(2, 0)) return;
+    //         if (moveMino(-1, 0)) return;
+    //         if (moveMino(2, -1)) return;
+    //         if (moveMino(-1, 2)) return;
     //         break;
-    //       case 180:
-    //         if (moveXY(-1, 0)) return 0;
-    //         if (moveXY(2, 0)) return 0;
-    //         if (moveXY(-1, -2)) return 0;
-    //         if (moveXY(2, -1)) return 0;
+    //       case MinoAngle.Rot_180:
+    //         if (moveMino(-1, 0)) return;
+    //         if (moveMino(2, 0)) return;
+    //         if (moveMino(-1, -2)) return;
+    //         if (moveMino(2, -1)) return;
     //         break;
-    //       case 270:
-    //         if (moveXY(2, 0)) return 0;
-    //         if (moveXY(-1, 0)) return 0;
-    //         if (moveXY(2, 1)) return 0;
-    //         if (moveXY(1, -2)) return 0;
+    //       case MinoAngle.Rot_270:
+    //         if (moveMino(2, 0)) return;
+    //         if (moveMino(-1, 0)) return;
+    //         if (moveMino(2, 1)) return;
+    //         if (moveMino(1, -2)) return;
     //         break;
     //     }
     //   } else {
     //     // angleで分岐
     //     switch (angle) {
-    //       case 0:
-    //         if (moveXY(-1, 0)) return 0;
-    //         if (moveXY(-1, 1)) return 0;
-    //         if (moveXY(0, -2)) return 0;
-    //         if (moveXY(-1, -2)) return 0;
+    //       case MinoAngle.Rot_000:
+    //         if (moveMino(-1, 0)) return;
+    //         if (moveMino(-1, 1)) return;
+    //         if (moveMino(0, -2)) return;
+    //         if (moveMino(-1, -2)) return;
     //         break;
-    //       case 90:
-    //         if (moveXY(1, 0)) return 0;
-    //         if (moveXY(1, -1)) return 0;
-    //         if (moveXY(0, 2)) return 0;
-    //         if (moveXY(1, 2)) return 0;
+    //       case MinoAngle.Rot_090:
+    //         if (moveMino(1, 0)) return;
+    //         if (moveMino(1, -1)) return;
+    //         if (moveMino(0, 2)) return;
+    //         if (moveMino(1, 2)) return;
     //         break;
-    //       case 180:
-    //         if (moveXY(1, 0)) return 0;
-    //         if (moveXY(1, 1)) return 0;
-    //         if (moveXY(0, -2)) return 0;
-    //         if (moveXY(1, -2)) return 0;
+    //       case MinoAngle.Rot_180:
+    //         if (moveMino(1, 0)) return;
+    //         if (moveMino(1, 1)) return;
+    //         if (moveMino(0, -2)) return;
+    //         if (moveMino(1, -2)) return;
     //         break;
-    //       case 270:
-    //         if (moveXY(-1, 0)) return 0;
-    //         if (moveXY(-1, -1)) return 0;
-    //         if (moveXY(0, 2)) return 0;
-    //         if (moveXY(-1, 2)) return 0;
+    //       case MinoAngle.Rot_270:
+    //         if (moveMino(-1, 0)) return;
+    //         if (moveMino(-1, -1)) return;
+    //         if (moveMino(0, 2)) return;
+    //         if (moveMino(-1, 2)) return;
     //         break;
     //     }
     //   }
