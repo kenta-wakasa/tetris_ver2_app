@@ -76,7 +76,8 @@ class PlayPage extends StatelessWidget {
                       model.mainLoop(fps);
                     } else {
                       model.rotateRight();
-                      model.isGrounded = !model.isGrounded;
+                      model.currentMinoIsGrounding =
+                          !model.currentMinoIsGrounding;
                     }
                   },
 
@@ -161,8 +162,8 @@ class PlayPage extends StatelessWidget {
                             CustomPaint(
                               painter: RenderMino(
                                 currentMino: model.currentMino,
-                                futureMino: [Point(0, 0)],
-                                fixedMino: [Point(0, 0)],
+                                futureMino: model.futureMino,
+                                fixedMino: model.fixedMino,
                               ),
                             ),
                           ],

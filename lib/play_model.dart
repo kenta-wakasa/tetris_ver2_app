@@ -10,10 +10,6 @@ class PlayModel extends ChangeNotifier {
   Timer _mainTimer;
   Timer _waitTimer;
   int count = 3;
-  int xPos = 0;
-  int yPos = 0;
-  int yPosFuture = 0;
-  int angle = 0;
   int index = -1;
   int indexMino = 0;
   int groundCount = 0;
@@ -29,28 +25,34 @@ class PlayModel extends ChangeNotifier {
 
   int countFrameForDropMino = 0;
   int countFrameForLockMino = 0;
-  bool isGrounded = false; // ミノがfixedミノと接地しているか
+  bool currentMinoIsGrounding = false; // ミノが接地しているか
   bool minoIsMoving = false;
   bool mainLoopIsCancelled = false;
   List<int> minoOrderList = [];
   int minoOrderIndex = 0;
   final _numGenerateMino = 7000; // はじめに生成するミノの個数
+
   int currentMinoType = 0;
+  int currentMinoAngle = 0;
+  int currentMinoXPos = 0;
+  int currentMinoYPos = 0;
 
   /// 質問：disposeはどこで呼ばれるのでしょう？
   @override
   void dispose() {
     super.dispose();
-    mainLoopIsCancelled = false;
+    mainLoopIsCancelled = true;
     print('dispose!');
   }
 
   /// frameごとに処理を実行する
   Future<void> mainLoop(int fps) async {
     /// 初期化処理
+    fixedMino.clear();
+    currentMino.clear();
+    futureMino.clear();
     mainLoopIsCancelled = false;
     countFrameForDropMino = 0;
-    yPos = 0;
     _generateMinoIndexList();
     await _countDown();
     _generateMino();
@@ -58,30 +60,31 @@ class PlayModel extends ChangeNotifier {
     /// メインループ
     final sw = Stopwatch()..start();
     int frame = 0; // フレーム番号
+
     while (!mainLoopIsCancelled) {
       frame++;
 
       /// テストために100フレーム目で停止させる。
-      if (frame == 300) {
+      if (frame == 500) {
         mainLoopIsCancelled = true;
       }
 
       /// ミノが接地していないなら1秒後に落下させる
-      if (!isGrounded) {
+      if (!currentMinoIsGrounding) {
         countFrameForDropMino++;
-        if (countFrameForDropMino % (fps * 1) == 0) {
+        if (countFrameForDropMino % (fps * 0.5) == 0) {
           moveMino(0, 1);
-          print('${countFrameForDropMino}drop');
         }
         countFrameForLockMino = 0;
       } else {
         /// 以下の条件を満たすときミノを固定する
         /// 1: ミノが接地している
-        /// 2: 0.5秒間操作がない
+        /// 2: 0.5秒間プレイヤーの操作がない
         if (!minoIsMoving) {
           countFrameForLockMino++;
           if (countFrameForLockMino % (fps * 0.5).toInt() == 0) {
-            lockMino();
+            _fixCurrentMino();
+            _generateMino();
           }
         } else {
           countFrameForLockMino = 0;
@@ -98,10 +101,14 @@ class PlayModel extends ChangeNotifier {
     }
   }
 
+  /// 新しいミノを生成する
   void _generateMino() {
     currentMinoType = minoOrderList[minoOrderIndex % _numGenerateMino];
-    currentMino = Mino.getMino(minoType: MinoType.values[currentMinoType]);
     minoOrderIndex++;
+    currentMinoAngle = 0;
+    currentMinoXPos = 0;
+    currentMinoYPos = 0;
+    _updateCurrentMino();
   }
 
   /// [_numGenerateMino]の数だけミノリスト生成する
@@ -115,27 +122,48 @@ class PlayModel extends ChangeNotifier {
 
   // 現在の位置から与えられた dx, dy だけ移動する
   void moveMino(int dx, int dy) {
-    // TODO: 衝突判定
-
+    // 衝突判定のための一時変数
+    List<Point> tmpMino = Mino.getMino(
+      minoType: MinoType.values[currentMinoType],
+      minoAngle: MinoAngle.values[currentMinoAngle],
+      dx: currentMinoXPos + dx,
+      dy: currentMinoYPos + dy,
+    );
     // 移動先が衝突していなければ
-    xPos += dx;
-    yPos += dy;
+    // currentMinoを更新する
+    if (!_onCollisionEnter(tmpMino)) {
+      currentMinoXPos += dx;
+      currentMinoYPos += dy;
+      _updateCurrentMino();
+    }
+  }
+
+  /// currentMino を固定する
+  void _fixCurrentMino() {
+    // 単純に add するとポインタが渡されてしまうことに注意
+    // [...list] で deep_copy が可能 (詳細は spread operator で検索)
+    fixedMino.addAll([...currentMino]);
+  }
+
+  /// 現在の MinoType, xPos, yPos, angle をもとに最新のミノに更新する
+  /// 落下位置の取得, 接地判定も行う
+  void _updateCurrentMino() {
     currentMino = Mino.getMino(
       minoType: MinoType.values[currentMinoType],
-      minoAngle: MinoAngle.values[0],
-      dx: xPos,
-      dy: yPos,
+      minoAngle: MinoAngle.values[currentMinoAngle],
+      dx: currentMinoXPos,
+      dy: currentMinoYPos,
     );
+    _findDropPos(); // 落下位置の取得
+    _checkCurrentMinoIsGrounding(); // 接地判定
   }
 
-  void lockMino() {
-    print('lockMino!');
-  }
-
+  /// ゲーム開始時のカウントダウンを行う
   Future<void> _countDown() async {
     final int fps = 1;
     count = 3;
     notifyListeners();
+    // 1秒ごとにカウントを減らす
     while (count > -1) {
       await Future.delayed(Duration(seconds: 1));
       count--;
@@ -143,36 +171,63 @@ class PlayModel extends ChangeNotifier {
     }
   }
 
-  _startMain() {
-    // if (_mainTimer == null || _mainTimer?.isActive == false) {
-    //   _mainTimer = Timer.periodic(
-    //     Duration(milliseconds: 1000),
-    //     (Timer t) {
-    //       if (!_verifyGround()) moveDown();
-    //     },
-    //   );
-    // }
+  /// 衝突判定
+  /// minoが衝突していればtrueを返す
+  bool _onCollisionEnter(List<Point> mino) {
+    for (final Point point in mino) {
+      // 場外判定
+      if (point.x < 0 ||
+          point.x > _horizontalLength - 1 ||
+          point.y > _verticalLength - 1) {
+        return true;
+      }
+      // 固定されたMinoとの衝突判定
+      for (final Point fixedPoint in fixedMino) {
+        if (fixedPoint.x == point.x && fixedPoint.y == point.y) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
-  startWaitTime() {
-    // _waitTimer = Timer.periodic(
-    //   Duration(milliseconds: 500),
-    //   (Timer t) {
-    //     for (Point e in currentMino) {
-    //       fixedMino.add(
-    //         Point(e.x, e.y),
-    //       );
-    //     }
-    //     _deleteMino();
-    //     wait = false;
-    //     _waitTimer?.cancel();
-    //     _generateMino();
-    //     if (_gameOver()) {
-    //     } else {
-    //       _startMain();
-    //     }
-    //   },
-    // );
+  /// currentMino の接地判定
+  void _checkCurrentMinoIsGrounding() {
+    // currentMinoYPos + 1 が衝突しているかを調べる
+    List<Point> tmpMino = Mino.getMino(
+      minoType: MinoType.values[currentMinoType],
+      minoAngle: MinoAngle.values[currentMinoAngle],
+      dx: currentMinoXPos,
+      dy: currentMinoYPos + 1,
+    );
+    if (_onCollisionEnter(tmpMino)) {
+      currentMinoIsGrounding = true;
+    } else {
+      currentMinoIsGrounding = false;
+    }
+  }
+
+  /// currentMino の落下位置をもとめる
+  void _findDropPos() {
+    // ひとつずつ currentMino を下げて 衝突するかを調べる
+    for (int dy = 1; dy <= _verticalLength + 1; dy++) {
+      List<Point> tmpMino = Mino.getMino(
+        minoType: MinoType.values[currentMinoType],
+        minoAngle: MinoAngle.values[currentMinoAngle],
+        dx: currentMinoXPos,
+        dy: currentMinoYPos + dy,
+      );
+      // 衝突したらひとつ前の dy - 1 を返す
+      if (_onCollisionEnter(tmpMino)) {
+        futureMino = Mino.getMino(
+          minoType: MinoType.values[currentMinoType],
+          minoAngle: MinoAngle.values[currentMinoAngle],
+          dx: currentMinoXPos,
+          dy: currentMinoYPos + (dy - 1),
+        );
+        return;
+      }
+    }
   }
 
   reset() {
@@ -477,52 +532,6 @@ class PlayModel extends ChangeNotifier {
     //   gameOver = true;
     // }
     // return gameOver;
-  }
-
-// predict drop position
-  _predictDropPos() {
-    // if (futureMino.isEmpty) {
-    //   futureMino = [
-    //     [0, 0],
-    //     [0, 0],
-    //     [0, 0],
-    //     [0, 0],
-    //   ];
-    // }
-    // for (yPosFuture = yPos; yPosFuture < 21; yPosFuture++) {
-    //   Mino.mino[indexMino][angle].asMap().forEach(
-    //     (index, value) {
-    //       futureMino[index][0] = value[0] + xPos;
-    //       futureMino[index][1] = value[1] + yPosFuture;
-    //     },
-    //   );
-    //   // 衝突が判定されたらひとつ手前を描画してやめる
-    //   if (_onCollisionEnter(futureMino)) {
-    //     futureMino.forEach((element) {
-    //       element[1]--;
-    //     });
-    //     notifyListeners();
-    //     return 0;
-    //   }
-    // }
-  }
-
-  /// 衝突判定
-  /// minoが衝突していればtrueを返す
-  bool _onCollisionEnter(List<Point> mino) {
-    for (final Point point in mino) {
-      if (point.x < 0 ||
-          point.x < _horizontalLength ||
-          _verticalLength < point.y) {
-        return true;
-      }
-      for (final Point fixedPoint in fixedMino) {
-        if (fixedPoint.x == point.x && fixedPoint.y == point.y) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   /// 消滅判定
