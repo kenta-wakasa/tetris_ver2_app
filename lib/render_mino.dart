@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class RenderMino extends CustomPainter {
-  final double _basicLength = 20;
+  final double _basicLength = 20; // グリッドの長さ
   final int _verticalLength = 20;
   final int _horizontalLength = 10;
 
@@ -17,42 +17,35 @@ class RenderMino extends CustomPainter {
     @required this.fixedMino,
   });
 
+  /// Mino を描画するための helper
   void _paintMino(Canvas canvas, Paint paint, List<Point> mino) {
     for (final Point point in mino) {
       canvas.drawRect(
-          Rect.fromLTWH(
-            _basicLength * point.x,
-            _basicLength * point.y,
-            _basicLength,
-            _basicLength,
-          ),
-          paint);
+        Rect.fromLTWH(
+          _basicLength * point.x,
+          _basicLength * point.y,
+          _basicLength,
+          _basicLength,
+        ),
+        paint,
+      );
     }
   }
 
-  /// 座標
-  /// 左上が原点(0, 0)
-  /// x軸は右方向に正
-  /// y軸は下方向に正
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
 
-    /// draw fixedMino
-    paint.color = Colors.brown;
-    _paintMino(canvas, paint, fixedMino);
+    /// フレームとグリッドの描画 ///
 
     /// draw outer frame
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2.0;
     canvas.drawRect(
-        Rect.fromLTWH(
-          0,
-          0,
-          _basicLength * _horizontalLength,
-          _basicLength * _verticalLength,
-        ),
-        paint);
+      Rect.fromLTWH(0, 0, _basicLength * _horizontalLength,
+          _basicLength * _verticalLength),
+      paint,
+    );
 
     /// draw grid
     paint.strokeWidth = .5;
@@ -60,30 +53,22 @@ class RenderMino extends CustomPainter {
     // draw vertical grid
     for (int index = 0; index < 10; index++) {
       canvas.drawLine(
-          Offset(
-            _basicLength * index,
-            0,
-          ),
-          Offset(
-            _basicLength * index,
-            _basicLength * _verticalLength,
-          ),
-          paint);
+        Offset(_basicLength * index, 0),
+        Offset(_basicLength * index, _basicLength * _verticalLength),
+        paint,
+      );
     }
 
     // draw horizontal grid
     for (int index = 0; index < 20; index++) {
       canvas.drawLine(
-          Offset(
-            _basicLength * 0,
-            _basicLength * index,
-          ),
-          Offset(
-            _basicLength * _horizontalLength,
-            _basicLength * index,
-          ),
-          paint);
+        Offset(_basicLength * 0, _basicLength * index),
+        Offset(_basicLength * _horizontalLength, _basicLength * index),
+        paint,
+      );
     }
+
+    /// 3種類のミノの描画 ///
 
     /// draw currentMino
     paint.style = PaintingStyle.fill;
@@ -94,6 +79,11 @@ class RenderMino extends CustomPainter {
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 3;
     _paintMino(canvas, paint, futureMino);
+
+    /// draw fixedMino
+    paint.style = PaintingStyle.fill;
+    paint.color = Colors.brown;
+    _paintMino(canvas, paint, fixedMino);
   }
 
   // 再描画のタイミングで呼ばれるメソッド

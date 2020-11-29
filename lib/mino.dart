@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 enum MinoType {
+  None,
   I_Mino,
   O_Mino,
   T_Mino,

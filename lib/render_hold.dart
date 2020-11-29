@@ -8,12 +8,12 @@ class RenderHold extends CustomPainter {
   final int _sideLength = 6;
   final int _xOffset = -2;
   final int _yOffset = 4;
-  List<Point> _minoList = [];
-  int indexHold = -1;
+
+  MinoType minoTypeInHold = MinoType.None;
   bool usedHold = false;
 
   RenderHold({
-    @required this.indexHold,
+    @required this.minoTypeInHold,
     @required this.usedHold,
   });
 
@@ -43,18 +43,16 @@ class RenderHold extends CustomPainter {
       paint.color = Colors.brown;
     }
     paint.style = PaintingStyle.fill;
-    try {
-      _minoList = Mino.getMino(
-        minoType: MinoType.values[indexHold],
-      );
-    } on RangeError catch (e) {
-      // print('登録されていないMinoタイプです。');
-    }
-    for (final element in _minoList) {
+
+    final tmpMino = Mino.getMino(
+      minoType: minoTypeInHold,
+    );
+
+    for (final Point point in tmpMino) {
       canvas.drawRect(
         Rect.fromLTWH(
-          _basicLength * (_xOffset + element.x),
-          _basicLength * (_yOffset + element.y),
+          _basicLength * (_xOffset + point.x),
+          _basicLength * (_yOffset + point.y),
           _basicLength,
           _basicLength,
         ),

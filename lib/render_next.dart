@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'mino.dart';
 
@@ -9,10 +7,9 @@ class RenderNext extends CustomPainter {
   final int _nextLenght = 6; // nextの表示個数
   final int _xOffset = -2;
   final int _yOffset = 4;
-  List<Point> _minoList = [];
-  List<int> nextMinoList = [];
+  List<MinoType> minoTypeInNextList = List.filled(6, MinoType.None);
   RenderNext({
-    @required this.nextMinoList,
+    @required this.minoTypeInNextList,
   });
 
   // 実際の描画処理を行うメソッド
@@ -41,22 +38,17 @@ class RenderNext extends CustomPainter {
     paint.style = PaintingStyle.fill;
 
     int _index = 0;
-    for (final element in nextMinoList) {
-      try {
-        _minoList = Mino.getMino(minoType: MinoType.values[element]);
-        for (final point in _minoList) {
-          canvas.drawRect(
-            Rect.fromLTWH(
-                _basicLength * (_xOffset + point.x),
-                _basicLength * (_yOffset + point.y + _index * _nextLenght),
-                _basicLength,
-                _basicLength),
-            paint,
-          );
-        }
-        // 登録されていないタイプのミノがきたら弾く
-      } on RangeError catch (e) {
-        // print('登録されていないMinoタイプです。');
+    for (final MinoType minoType in minoTypeInNextList) {
+      final tmpMino = Mino.getMino(minoType: minoType);
+      for (final point in tmpMino) {
+        canvas.drawRect(
+          Rect.fromLTWH(
+              _basicLength * (_xOffset + point.x),
+              _basicLength * (_yOffset + point.y + _index * _nextLenght),
+              _basicLength,
+              _basicLength),
+          paint,
+        );
       }
       _index++;
     }

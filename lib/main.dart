@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tetris_ver2_app/start_page.dart';
+import 'start_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

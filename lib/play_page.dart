@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -119,7 +121,7 @@ class PlayPage extends StatelessWidget {
                             CustomPaint(
                               painter: RenderHold(
                                 usedHold: model.usedHold,
-                                indexHold: model.minoTypeInHold,
+                                minoTypeInHold: model.minoTypeInHold,
                               ),
                             ),
                           ],
@@ -153,7 +155,7 @@ class PlayPage extends StatelessWidget {
                             Text('NEXT'),
                             CustomPaint(
                               painter: RenderNext(
-                                nextMinoList: model.minoTypeNextList,
+                                minoTypeInNextList: model.minoTypeInNextList,
                               ),
                             ),
                           ],
@@ -188,14 +190,47 @@ class PlayPage extends StatelessWidget {
                   alignment: Alignment.bottomCenter,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        model.deletedLineCount.toString(),
+                        "TIME    " +
+                            model.remainingTimeMin.toString() +
+                            ":" +
+                            model.remainingTimeSec.toString().padLeft(2, '0'),
                         style: TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.bold),
+                          fontSize: 24,
+                          fontWeight: FontWeight.normal,
+                          fontFeatures: [FontFeature.tabularFigures()], // 等幅になる
+                        ),
                       ),
                       SizedBox(
-                        height: 80,
+                        height: 8,
+                      ),
+                      Text(
+                        "LINES " +
+                            model.deletedLinesCount.toString().padLeft(4, '0'),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.normal,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        "BEST  " +
+                            model.deletedLinesCountBest
+                                .toString()
+                                .padLeft(4, '0'),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.normal,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 48,
                       ),
                     ],
                   ),
@@ -221,7 +256,7 @@ class PlayPage extends StatelessWidget {
                                 height: 24,
                               ),
                               Text(
-                                '${model.deletedLineCount}ライン達成!!',
+                                '${model.deletedLinesCount}ライン達成!!',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -242,7 +277,12 @@ class PlayPage extends StatelessWidget {
                                     ),
                                   ),
                                   onPressed: () {
-                                    model.mainLoop(fps);
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => PlayPage(),
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
