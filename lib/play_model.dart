@@ -86,32 +86,33 @@ class PlayModel extends ChangeNotifier {
   }
 
   /// ゲーム開始時のカウントダウンを行う
+  /// カウントダウン終了後 Mino を生成する
   Future<void> _countDown() async {
     // 1秒ごとにカウントを減らす
     while (countDownNum > -1) {
+      notifyListeners();
       await Future.delayed(Duration(seconds: 1));
       countDownNum--;
-      notifyListeners();
     }
+    _generateMino();
   }
 
   /// frameごとに処理を実行する
   Future<void> mainLoop(int fps) async {
     /// 初期化処理
     initialize();
+    // ベストスコアを取り出す
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     deletedLinesCountBest = prefs.get('deletedLinesCountBest') ?? 0;
-    _generateMinoOrderList(); //  Mino の順番を予め生成する
-    notifyListeners();
+    //  Mino の順番を予め生成する
+    _generateMinoOrderList();
     await _countDown();
-    _generateMino();
 
     /// メインループ
     final sw = Stopwatch()..start();
     int frame = 0; // フレーム番号
-    bool isCancelled = false;
     // gameOverになるまでループし続ける
-    while (!isCancelled) {
+    while (!gameOver) {
       frame++;
 
       ///  Mino が接地していないなら1秒後に落下させる
@@ -161,7 +162,6 @@ class PlayModel extends ChangeNotifier {
       await Future.delayed(
         Duration(microseconds: next - sw.elapsedMicroseconds),
       );
-      isCancelled = gameOver;
     }
 
     /// BEST の更新
@@ -175,13 +175,13 @@ class PlayModel extends ChangeNotifier {
   /// 新しい Mino を生成する
   void _generateMino() {
     _currentMinoType = _minoOrderList[_minoOrderIndex];
-    _minoOrderIndex++;
     _currentMinoAngle = MinoAngle.Rot_000;
     _currentMinoXPos = 0;
     _currentMinoYPos = 0;
     usedHold = false;
     _updateCurrentMino();
 
+    _minoOrderIndex++;
     // Nextミノを更新する
     for (int i = 0; i < minoTypeInNextList.length; i++) {
       minoTypeInNextList[i] = _minoOrderList[(_minoOrderIndex + i)];
