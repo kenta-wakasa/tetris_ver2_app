@@ -293,21 +293,29 @@ class PlayModel extends ChangeNotifier {
   void _deleteLine() {
     // 各列で 10 個 point が存在する列を消す
     // 長さ 20 の 0 詰めしたリストに個数を格納していく
-    // pointCountList[n]　=  n 列目に存在する point の個数
+    // pointCountList[n]　==  n 列目に存在する point の個数
     List<int> pointCountList = List.filled(20, 0);
+
+    /// n 行目に存在する poin を数える
     for (final Point point in fixedMino) {
       if (point.y >= 0 && point.y < 20) {
         pointCountList[point.y]++;
       }
     }
+
+    /// 上から1行ずつ消去可能な行があるか調べていく
     for (int index = 0; index < pointCountList.length; index++) {
+      // 消去可能な行があった場合
       if (pointCountList[index] == 10) {
-        deletedLinesCount++;
-        // 行を削除
-        fixedMino.removeWhere((point) => point.y == index);
-        // indexより上の行に存在する point を1行下げる
+        deletedLinesCount++; // 消去したライン数をカウントアップしていく
+        fixedMino.removeWhere((point) => point.y == index); // 行を消去
+        // index より上の行に存在する point を1行下げる
+        // for (final point in fixedMino) で書けそうだが　point の更新が上手くいかなかった
         for (int i = 0; i < fixedMino.length; i++) {
+          // y は下方向に正であることに注意
           if (fixedMino[i].y < index) {
+            // Point の x, y は書き換え不能なため fixedMino[i].y += 1 とは書けない
+            // 改めて Point を生成して上書きする
             fixedMino[i] = Point(fixedMino[i].x, fixedMino[i].y + 1);
           }
         }
@@ -443,7 +451,7 @@ class PlayModel extends ChangeNotifier {
   void rotateAntiClockwise() {
     final MinoAngle tmpAngle = _currentMinoAngle; // 回転前の角度を一時的に保持する
     _currentMinoAngle =
-        MinoAngle.values[(_currentMinoAngle.index + 1) % 4]; // 反時計回りに270度回転と同義
+        MinoAngle.values[(_currentMinoAngle.index + 1) % 4]; // +1 が反時計回りに1回転
     final List<Point> tmpMino = Mino.getMino(
       minoType: _currentMinoType,
       minoAngle: _currentMinoAngle,
