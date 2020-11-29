@@ -363,7 +363,8 @@ class PlayModel extends ChangeNotifier {
   }
 
   /// Mino の回転についての関数はひとつにまとめられそうだが
-  /// SRS は時計回りと半時計周りで挙動が異なるため分割している
+  /// SRS(スーパーローテーションシステム)は
+  /// 時計回りと半時計周りで挙動が異なるため分割している
 
   /// 時計回りに90度回転
   void rotateClockwise() {
@@ -384,6 +385,8 @@ class PlayModel extends ChangeNotifier {
       /// I_Mino の場合
       if (_currentMinoType == MinoType.I_Mino) {
         // 回転後の角度によって移動させる順番が分岐する
+        // 順に移動させられるかを確認し
+        // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(-2, 0)) return;
@@ -414,6 +417,8 @@ class PlayModel extends ChangeNotifier {
         /// I_Mino 以外
       } else {
         // 回転後の角度によって移動させる順番が分岐する
+        // 順に移動させられるかを確認し
+        // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(-1, 0)) return;
@@ -443,8 +448,11 @@ class PlayModel extends ChangeNotifier {
       }
       // どこにも動かせなかった場合角度を戻す
       _currentMinoAngle = tmpAngle;
+
+      /// 衝突しなかった場合
+    } else {
+      _updateCurrentMino();
     }
-    _updateCurrentMino();
   }
 
   /// 反時計回りに90度回転
@@ -466,6 +474,8 @@ class PlayModel extends ChangeNotifier {
       /// I_Mino の場合
       if (_currentMinoType == MinoType.I_Mino) {
         // 回転後の角度によって移動させる順番が分岐する
+        // 順に移動させられるかを確認し
+        // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(2, 0)) return;
@@ -496,6 +506,8 @@ class PlayModel extends ChangeNotifier {
         /// I_Mino 以外
       } else {
         // 回転後の角度によって移動させる順番が分岐する
+        // 順に移動させられるかを確認し
+        // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(1, 0)) return;
@@ -525,8 +537,11 @@ class PlayModel extends ChangeNotifier {
       }
       // どこにも動かせなかった場合角度を戻す
       _currentMinoAngle = tmpAngle;
+
+      /// 衝突しなかった場合
+    } else {
+      _updateCurrentMino();
     }
-    _updateCurrentMino();
   }
 
   /// 下フリック操作で一気に Mino を落下させる
