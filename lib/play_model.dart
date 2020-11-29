@@ -5,41 +5,50 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'mino.dart';
 
 class PlayModel extends ChangeNotifier {
+  /// プレイエリアの大きさ
   final int _verticalLength = 20; // プレイエリアの縦の長さ
   final int _horizontalLength = 10; // プレイエリアの横の長さ
-  final int _countDownStartNum = 3; // カウントダウンの秒数
-  final int _generateMinoNum = 1400; // はじめに生成する Mino の個数
-  final double _thresholdSecForDropMino = 1.0; // ミノが落下するまでの秒数
-  final double _thresholdSecForFixCurrentMino = 0.5; // ミノが固定されるまでの秒数
-  final int _limitTimeSec = 180; // 制限時間(秒)
 
-  int remainingTime = 0; // 残り時間
+  /// 時間制御に関する変数
+  final double _thresholdSecForDropMino = 1.0; // Mino が落下するまでの秒数
+  final double _thresholdSecForfixMino = 0.5; // Mino が固定されるまでの秒数
+  final int _limitTimeSec = 180; // 制限時間 ( 秒 )
+  int _remainingTime = 0; // 残り時間
   int remainingTimeSec = 0; // 残り時間 秒の部分
   int remainingTimeMin = 0; // 残り時間 分の部分
-
-  int _frameCountForDropMino = 0;
-  int _frameCountForFixCurrentMino = 0;
-
-  List<MinoType> _minoOrderList = [];
-  int _minoOrderIndex = 0;
-
-  List<MinoType> minoTypeInNextList = List.filled(6, MinoType.None);
-  MinoType minoTypeInHold;
+  final int _countDownStartNum = 3; // カウントダウンの秒数
   int countDownNum = 3;
+
+  /// Mino が出る順番に関する変数
+  final int _generateMinoNum = 1400; // はじめに生成する Mino の個数
+  List<MinoType> _minoOrderList = []; // Mino がでる順番
+  int _minoOrderIndex = 0; // 現在の Mino が何番目か
+
+  /// Next と Hold
+  List<MinoType> nextMinoTypeList = List.filled(6, MinoType.None);
+  MinoType holdMinoType;
+
+  /// 消した行数に関する変数
   int deletedLinesCount = 0;
   int deletedLinesCountBest = 0;
 
+  /// currentMino に関する変数
   MinoType _currentMinoType = MinoType.None;
   MinoAngle _currentMinoAngle = MinoAngle.Rot_000;
   int _currentMinoXPos = 0;
   int _currentMinoYPos = 0;
 
+  /// プレイエリアに描画される3つの Mino について
+  /// currentMino: 現在操作している Mino
+  /// futureMino: currentMino の落下位置
+  /// fixedMino: 固定された Mino を示す
   List<Point> currentMino = [];
   List<Point> futureMino = [];
   List<Point> fixedMino = [];
 
-  bool usedHold = false;
-  bool gameOver = false;
+  /// 各種 フラグ
+  bool gameOver = false; // GameOverになったか
+  bool usedHold = false; // Holdを使ったか
   bool _currentMinoIsGrounding = false; //  Mino が接地しているか
   bool _minoIsMoving = false; //  Mino が動いたか
 
@@ -48,13 +57,14 @@ class PlayModel extends ChangeNotifier {
     gameOver = false;
     usedHold = false;
     _minoOrderIndex = 0;
-    _frameCountForDropMino = 0;
-    _frameCountForFixCurrentMino = 0;
-    minoTypeInNextList = List.filled(6, MinoType.None);
-    minoTypeInHold = MinoType.None;
+    nextMinoTypeList = List.filled(6, MinoType.None);
+    holdMinoType = MinoType.None;
     deletedLinesCount = 0;
     countDownNum = _countDownStartNum;
-    remainingTime = _limitTimeSec;
+    _remainingTime = _limitTimeSec;
+    remainingTimeMin = _remainingTime ~/ 60;
+    remainingTimeSec = _remainingTime % 60;
+    _minoOrderList.clear();
     fixedMino.clear();
     currentMino.clear();
     futureMino.clear();
@@ -97,7 +107,7 @@ class PlayModel extends ChangeNotifier {
     _generateMino();
   }
 
-  /// frameごとに処理を実行する
+  /// === ↓↓↓ メインループ開始 ↓↓↓ === ///
   Future<void> mainLoop(int fps) async {
     /// 初期化処理
     initialize();
@@ -106,41 +116,47 @@ class PlayModel extends ChangeNotifier {
     deletedLinesCountBest = prefs.get('deletedLinesCountBest') ?? 0;
     //  Mino の順番を予め生成する
     _generateMinoOrderList();
-    await _countDown();
+    await _countDown(); // カウントダウン後に最初の Mino を 生成する
 
-    /// メインループ
+    /// frameごとに処理を実行する
     final sw = Stopwatch()..start();
     int frame = 0; // フレーム番号
+
+    // Mino が 落下するまでのフレーム数
+    final int _thresholdFrameForDropMino =
+        (fps * _thresholdSecForDropMino).toInt();
+    int _frameCountForDropMino = 0; // Mino が接地していない状態の経過フレーム
+
+    // Mino が 固定するまでのフレーム数
+    final _thresholdFrameForFixMino = (fps * _thresholdSecForfixMino).toInt();
+    int _frameCountForFixMino = 0; // Mino が接地している状態での経過フレーム
     // gameOverになるまでループし続ける
     while (!gameOver) {
       frame++;
 
-      ///  Mino が接地していないなら1秒後に落下させる
+      ///  Mino が接地していないなら 1.0 秒後に落下させる
       if (!_currentMinoIsGrounding) {
         _frameCountForDropMino++;
-        final int _thresholdFrameForDropMino =
-            (fps * _thresholdSecForDropMino).toInt();
         if (_frameCountForDropMino % _thresholdFrameForDropMino == 0) {
-          moveMino(0, 1); // ミノを1行下げる
+          moveMino(0, 1); // Mino を1行下げる
         }
-        _frameCountForFixCurrentMino = 0;
+        _frameCountForFixMino = 0;
       } else {
         /// 以下の条件を満たすとき Mino を固定する
         /// 1:  Mino が接地している
-        /// 2: 0.5秒間プレイヤーの操作がない ( minoIsMoving が false )
+        /// 2: 0.5 秒間プレイヤーの操作がない (== minoIsMoving が false )
         if (!_minoIsMoving) {
-          _frameCountForFixCurrentMino++;
-          final _thresholdFrameForFixCurrentMino =
-              (fps * _thresholdSecForFixCurrentMino).toInt();
-          if (_frameCountForFixCurrentMino % _thresholdFrameForFixCurrentMino ==
-              0) {
-            _fixCurrentMino();
+          _frameCountForFixMino++;
+          if (_frameCountForFixMino % _thresholdFrameForFixMino == 0) {
+            _fixMino();
             _deleteLine();
             _checkGameOver();
             _generateMino();
           }
+
+          /// Mino が動いた場合はフレームのカウントを0に戻す
         } else {
-          _frameCountForFixCurrentMino = 0;
+          _frameCountForFixMino = 0;
           _minoIsMoving = false;
         }
         _frameCountForDropMino = 0;
@@ -148,13 +164,13 @@ class PlayModel extends ChangeNotifier {
 
       /// 残り時間を減らす
       if (frame % fps == 0) {
-        remainingTime--;
-        remainingTimeMin = remainingTime ~/ 60;
-        remainingTimeSec = remainingTime % 60;
+        _remainingTime--;
+        remainingTimeMin = _remainingTime ~/ 60;
+        remainingTimeSec = _remainingTime % 60;
       }
 
       /// 時間切れ
-      if (remainingTime == 0) {
+      if (_remainingTime == 0) {
         gameOver = true;
       }
 
@@ -172,6 +188,8 @@ class PlayModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// === ↑↑↑ メインループ終了 ↑↑↑ === ///
+
   /// 新しい Mino を生成する
   void _generateMino() {
     _currentMinoType = _minoOrderList[_minoOrderIndex];
@@ -181,10 +199,10 @@ class PlayModel extends ChangeNotifier {
     usedHold = false;
     _updateCurrentMino();
 
+    // Next Mino を更新する
     _minoOrderIndex++;
-    // Nextミノを更新する
-    for (int i = 0; i < minoTypeInNextList.length; i++) {
-      minoTypeInNextList[i] = _minoOrderList[(_minoOrderIndex + i)];
+    for (int i = 0; i < nextMinoTypeList.length; i++) {
+      nextMinoTypeList[i] = _minoOrderList[(_minoOrderIndex + i)];
     }
   }
 
@@ -197,38 +215,11 @@ class PlayModel extends ChangeNotifier {
       dx: _currentMinoXPos,
       dy: _currentMinoYPos,
     );
-    _findDropPos(); // 落下位置の取得
     _checkCurrentMinoIsGrounding(); // 接地判定
+    _findDropPos(); // 落下位置の取得
 
-    _minoIsMoving = true;
+    _minoIsMoving = true; // currentMino の更新を Mino が動いたとしている
     notifyListeners();
-  }
-
-  /// currentMino を固定する
-  void _fixCurrentMino() {
-    // 単純に add するとポインタが渡されてしまうことに注意
-    // [...list] で deep_copy が可能 (詳細は spread operator で検索)
-    fixedMino.addAll([...currentMino]);
-  }
-
-  /// 衝突判定
-  /// minoが衝突していればtrueを返す
-  bool _onCollisionEnter(List<Point> mino) {
-    for (final Point point in mino) {
-      // 場外判定
-      if (point.x < 0 ||
-          point.x > _horizontalLength - 1 ||
-          point.y > _verticalLength - 1) {
-        return true;
-      }
-      // 固定されたMinoとの衝突判定
-      for (final Point fixedPoint in fixedMino) {
-        if (fixedPoint.x == point.x && fixedPoint.y == point.y) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   /// currentMino の接地判定
@@ -268,6 +259,33 @@ class PlayModel extends ChangeNotifier {
         return;
       }
     }
+  }
+
+  /// currentMino を固定する
+  void _fixMino() {
+    // 単純に add するとポインタが渡されてしまうことに注意
+    // [...list] で deep_copy が可能 (詳細は spread operator で検索)
+    fixedMino.addAll([...currentMino]);
+  }
+
+  /// 衝突判定
+  /// minoが衝突していればtrueを返す
+  bool _onCollisionEnter(List<Point> mino) {
+    for (final Point point in mino) {
+      // 場外判定
+      if (point.x < 0 ||
+          point.x > _horizontalLength - 1 ||
+          point.y > _verticalLength - 1) {
+        return true;
+      }
+      // 固定されたMinoとの衝突判定
+      for (final Point fixedPoint in fixedMino) {
+        if (fixedPoint.x == point.x && fixedPoint.y == point.y) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /// ラインを消去する
@@ -321,16 +339,23 @@ class PlayModel extends ChangeNotifier {
       dy: _currentMinoYPos + dy,
     );
     // 移動先が衝突していなければ
-    // currentMinoを更新する
+    // ・currentMino を更新する
+    // ・true を返す
     if (!_onCollisionEnter(tmpMino)) {
       _currentMinoXPos += dx;
       _currentMinoYPos += dy;
       _updateCurrentMino();
       return true;
+      // 移動先が衝突していれば
+      // ・currenMino は更新しない
+      // ・false を返す
     } else {
       return false;
     }
   }
+
+  /// Mino の回転についての関数はひとつにまとめられそうだが
+  /// SRS は時計回りと半時計周りで挙動が異なるため分割している
 
   /// 時計回りに90度回転
   void rotateClockwise() {
@@ -344,13 +369,13 @@ class PlayModel extends ChangeNotifier {
       dy: _currentMinoYPos,
     );
 
-    /// 回転したとき他の障害部に当たった場合
+    /// 回転したとき衝突判定があっ他場合
     /// SRS(スーパーローテーションシステム)に従い Mino を移動させる
     /// 参考: https://tetrisch.github.io/main/srs.html
     if (_onCollisionEnter(tmpMino)) {
       /// I_Mino の場合
       if (_currentMinoType == MinoType.I_Mino) {
-        // angleで分岐
+        // 回転後の角度によって移動させる順番が分岐する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(-2, 0)) return;
@@ -380,7 +405,7 @@ class PlayModel extends ChangeNotifier {
 
         /// I_Mino 以外
       } else {
-        // angleで分岐
+        // 回転後の角度によって移動させる順番が分岐する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(-1, 0)) return;
@@ -426,13 +451,13 @@ class PlayModel extends ChangeNotifier {
       dy: _currentMinoYPos,
     );
 
-    /// 回転したとき他の障害部に当たった場合
+    /// 回転したとき衝突判定があっ他場合
     /// SRS(スーパーローテーションシステム)に従い Mino を移動させる
     /// 参考: https://tetrisch.github.io/main/srs.html
     if (_onCollisionEnter(tmpMino)) {
       /// I_Mino の場合
       if (_currentMinoType == MinoType.I_Mino) {
-        // angleで分岐
+        // 回転後の角度によって移動させる順番が分岐する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(2, 0)) return;
@@ -462,7 +487,7 @@ class PlayModel extends ChangeNotifier {
 
         /// I_Mino 以外
       } else {
-        // angleで分岐
+        // 回転後の角度によって移動させる順番が分岐する
         switch (_currentMinoAngle) {
           case MinoAngle.Rot_000:
             if (moveMino(1, 0)) return;
@@ -498,30 +523,34 @@ class PlayModel extends ChangeNotifier {
 
   /// 下フリック操作で一気に Mino を落下させる
   hardDrop() {
-    currentMino = [...futureMino];
-    _fixCurrentMino();
+    currentMino = [...futureMino]; // 一気にMinoを落下させる
+    _fixMino();
     _deleteLine();
     _checkGameOver();
     _generateMino();
   }
 
+  /// 上フリックで Mino を Hold する
+  /// すでに Hold している Mino がある場合は入れ替える
   holdMino() {
-    // Minoが生成されてからまだ一度も hold が使われていない場合
+    // Minoが生成されてからまだ一度も Hold が使われていない場合
     if (!usedHold) {
-      MinoType tmpMinoType = _currentMinoType;
-
-      /// すでに Hold されている Mino がある場合
-      if (minoTypeInHold != MinoType.None) {
-        _currentMinoType = minoTypeInHold;
-        minoTypeInHold = tmpMinoType;
+      // すでに Hold されている Mino がある場合
+      // currentMino と holdMino を入れ替える
+      if (holdMinoType != MinoType.None) {
+        MinoType tmpMinoType = _currentMinoType; // 一時的に保持
+        _currentMinoType = holdMinoType;
+        holdMinoType = tmpMinoType;
         _currentMinoAngle = MinoAngle.Rot_000;
         _currentMinoXPos = 0;
         _currentMinoYPos = 0;
         _updateCurrentMino();
 
-        /// まだ一度も Hold していない場合
+        // まだ一度も Hold していない場合
+        // currentMino を holdMino に追加し
+        // 新しい Mino を生成する
       } else {
-        minoTypeInHold = tmpMinoType;
+        holdMinoType = _currentMinoType;
         _generateMino();
       }
 

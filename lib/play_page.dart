@@ -42,7 +42,7 @@ class PlayPage extends StatelessWidget {
                   // ドラッグのスタートをタップした直後に設定
                   dragStartBehavior: DragStartBehavior.down,
 
-                  /// タップ時に初期化
+                  /// タップダウン時に初期化
                   onPanDown: (_) {
                     _usedHardDrop = false;
                     _usedHold = false;
@@ -51,7 +51,9 @@ class PlayPage extends StatelessWidget {
                     _deltaDown = 0;
                   },
 
-                  /// タップで回転処理
+                  /// タップアップで 回転処理
+                  /// 左側をタップで 反時計回り回転
+                  /// 右側をタップで 時計回り回転
                   onTapUp: (details) {
                     if (details.globalPosition.dx < _centerPos) {
                       model.rotateAntiClockwise();
@@ -105,9 +107,28 @@ class PlayPage extends StatelessWidget {
                   ),
                 ),
 
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: _size.width,
+                    child: Text(
+                      "TIME    " +
+                          model.remainingTimeMin.toString() +
+                          ":" +
+                          model.remainingTimeSec.toString().padLeft(2, '0'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.normal,
+                        fontFeatures: [FontFeature.tabularFigures()], // 等幅になる
+                      ),
+                    ),
+                  ),
+                ),
+
                 /// 描画部分
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 40, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 64, 16, 0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -121,7 +142,7 @@ class PlayPage extends StatelessWidget {
                             CustomPaint(
                               painter: RenderHold(
                                 usedHold: model.usedHold,
-                                minoTypeInHold: model.minoTypeInHold,
+                                holdMinoType: model.holdMinoType,
                               ),
                             ),
                           ],
@@ -155,7 +176,7 @@ class PlayPage extends StatelessWidget {
                             Text('NEXT'),
                             CustomPaint(
                               painter: RenderNext(
-                                minoTypeInNextList: model.minoTypeInNextList,
+                                nextMinoTypeList: model.nextMinoTypeList,
                               ),
                             ),
                           ],
@@ -192,17 +213,6 @@ class PlayPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        "TIME    " +
-                            model.remainingTimeMin.toString() +
-                            ":" +
-                            model.remainingTimeSec.toString().padLeft(2, '0'),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.normal,
-                          fontFeatures: [FontFeature.tabularFigures()], // 等幅になる
-                        ),
-                      ),
                       SizedBox(
                         height: 8,
                       ),
@@ -210,7 +220,7 @@ class PlayPage extends StatelessWidget {
                         "LINES " +
                             model.deletedLinesCount.toString().padLeft(4, '0'),
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.normal,
                           fontFeatures: [FontFeature.tabularFigures()],
                         ),
@@ -224,7 +234,7 @@ class PlayPage extends StatelessWidget {
                                 .toString()
                                 .padLeft(4, '0'),
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.normal,
                           fontFeatures: [FontFeature.tabularFigures()],
                         ),

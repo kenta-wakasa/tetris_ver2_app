@@ -9,11 +9,11 @@ class RenderHold extends CustomPainter {
   final int _xOffset = -2;
   final int _yOffset = 4;
 
-  MinoType minoTypeInHold = MinoType.None;
+  MinoType holdMinoType = MinoType.None;
   bool usedHold = false;
 
   RenderHold({
-    @required this.minoTypeInHold,
+    @required this.holdMinoType,
     @required this.usedHold,
   });
 
@@ -45,7 +45,7 @@ class RenderHold extends CustomPainter {
     paint.style = PaintingStyle.fill;
 
     final tmpMino = Mino.getMino(
-      minoType: minoTypeInHold,
+      minoType: holdMinoType,
     );
 
     for (final Point point in tmpMino) {

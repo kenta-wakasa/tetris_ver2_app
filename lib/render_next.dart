@@ -7,9 +7,9 @@ class RenderNext extends CustomPainter {
   final int _nextLenght = 6; // nextの表示個数
   final int _xOffset = -2;
   final int _yOffset = 4;
-  List<MinoType> minoTypeInNextList = List.filled(6, MinoType.None);
+  List<MinoType> nextMinoTypeList = List.filled(6, MinoType.None);
   RenderNext({
-    @required this.minoTypeInNextList,
+    @required this.nextMinoTypeList,
   });
 
   // 実際の描画処理を行うメソッド
@@ -38,7 +38,7 @@ class RenderNext extends CustomPainter {
     paint.style = PaintingStyle.fill;
 
     int _index = 0;
-    for (final MinoType minoType in minoTypeInNextList) {
+    for (final MinoType minoType in nextMinoTypeList) {
       final tmpMino = Mino.getMino(minoType: minoType);
       for (final point in tmpMino) {
         canvas.drawRect(

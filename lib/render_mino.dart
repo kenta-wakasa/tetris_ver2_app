@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class RenderMino extends CustomPainter {
-  final double _basicLength = 20; // グリッドの長さ
+  final double _basicLength = 20; // 1 グリッドの長さ
   final int _verticalLength = 20;
   final int _horizontalLength = 10;
 
@@ -51,7 +51,7 @@ class RenderMino extends CustomPainter {
     paint.strokeWidth = .5;
 
     // draw vertical grid
-    for (int index = 0; index < 10; index++) {
+    for (int index = 0; index < _horizontalLength; index++) {
       canvas.drawLine(
         Offset(_basicLength * index, 0),
         Offset(_basicLength * index, _basicLength * _verticalLength),
@@ -60,7 +60,7 @@ class RenderMino extends CustomPainter {
     }
 
     // draw horizontal grid
-    for (int index = 0; index < 20; index++) {
+    for (int index = 0; index < _verticalLength; index++) {
       canvas.drawLine(
         Offset(_basicLength * 0, _basicLength * index),
         Offset(_basicLength * _horizontalLength, _basicLength * index),
@@ -68,7 +68,10 @@ class RenderMino extends CustomPainter {
       );
     }
 
-    /// 3種類のミノの描画 ///
+    /// 3種類の Mino の描画 ///
+    /// currentMino: 現在操作している Mino
+    /// futureMino: currentMino の落下位置
+    /// fixedMino: 固定された Mino を示す
 
     /// draw currentMino
     paint.style = PaintingStyle.fill;
