@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'mino.dart';
 
@@ -48,7 +46,7 @@ class RenderHold extends CustomPainter {
       minoType: holdMinoType,
     );
 
-    for (final Point point in tmpMino) {
+    for (final point in tmpMino) {
       canvas.drawRect(
         Rect.fromLTWH(
           _basicLength * (_xOffset + point.x),

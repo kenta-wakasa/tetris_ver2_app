@@ -52,6 +52,14 @@ class PlayModel extends ChangeNotifier {
   bool _currentMinoIsGrounding = false; //  Mino が接地しているか
   bool _minoIsMoving = false; //  Mino が動いたか
 
+  /// このmodelが廃棄されるときに呼ばれる
+  @override
+  void dispose() {
+    super.dispose();
+    initialize();
+    gameOver = true;
+  }
+
   /// 初期化処理
   void initialize() {
     gameOver = false;
@@ -87,14 +95,6 @@ class PlayModel extends ChangeNotifier {
     }
   }
 
-  /// このmodelが廃棄されるときに呼ばれる
-  @override
-  void dispose() {
-    super.dispose();
-    initialize();
-    gameOver = true;
-  }
-
   /// ゲーム開始時のカウントダウンを行う
   /// カウントダウン終了後 Mino を生成する
   Future<void> _countDown() async {
@@ -118,7 +118,7 @@ class PlayModel extends ChangeNotifier {
     _generateMinoOrderList();
     await _countDown(); // カウントダウン後に最初の Mino を 生成する
 
-    /// frameごとに処理を実行する
+    /// frame ごとに処理を実行する
     final sw = Stopwatch()..start();
     int frame = 0; // フレーム番号
 
@@ -137,16 +137,17 @@ class PlayModel extends ChangeNotifier {
       ///  Mino が接地していないなら 1.0 秒後に落下させる
       if (!_currentMinoIsGrounding) {
         _frameCountForDropMino++;
+        _frameCountForFixMino = 0;
         if (_frameCountForDropMino % _thresholdFrameForDropMino == 0) {
           moveMino(0, 1); // Mino を1行下げる
         }
-        _frameCountForFixMino = 0;
       } else {
         /// 以下の条件を満たすとき Mino を固定する
         /// 1:  Mino が接地している
         /// 2: 0.5 秒間プレイヤーの操作がない (== minoIsMoving が false )
         if (!_minoIsMoving) {
           _frameCountForFixMino++;
+          _frameCountForDropMino = 0;
           if (_frameCountForFixMino % _thresholdFrameForFixMino == 0) {
             _fixMino();
             _deleteLine();
@@ -159,7 +160,6 @@ class PlayModel extends ChangeNotifier {
           _frameCountForFixMino = 0;
           _minoIsMoving = false;
         }
-        _frameCountForDropMino = 0;
       }
 
       /// 残り時間を減らす

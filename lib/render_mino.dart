@@ -19,7 +19,7 @@ class RenderMino extends CustomPainter {
 
   /// Mino を描画するための helper
   void _paintMino(Canvas canvas, Paint paint, List<Point> mino) {
-    for (final Point point in mino) {
+    for (final point in mino) {
       canvas.drawRect(
         Rect.fromLTWH(
           _basicLength * point.x,

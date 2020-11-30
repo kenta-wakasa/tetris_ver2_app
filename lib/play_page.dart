@@ -107,6 +107,7 @@ class PlayPage extends StatelessWidget {
                   ),
                 ),
 
+                /// 残り時間の表示
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SizedBox(
@@ -126,7 +127,7 @@ class PlayPage extends StatelessWidget {
                   ),
                 ),
 
-                /// 描画部分
+                /// Mino の描画
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 64, 16, 0),
                   child: Row(
