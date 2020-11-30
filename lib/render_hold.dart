@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'mino.dart';
 
 class RenderHold extends CustomPainter {
-  final double _basicLength = 10;
-  final int _sideLength = 6;
-  final int _xOffset = -2;
-  final int _yOffset = 4;
+  final _basicLength = 10.0;
+  final _sideLength = 6;
+  final _xOffset = -2;
+  final _yOffset = 4;
 
   MinoType holdMinoType = MinoType.None;
   bool usedHold = false;

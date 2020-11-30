@@ -3,11 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 enum MinoType { None, I_Mino, O_Mino, T_Mino, J_Mino, L_Mino, S_Mino, Z_Mino }
-
 enum MinoAngle { Rot_000, Rot_090, Rot_180, Rot_270 }
 
 class Mino {
-  /// typeとangle, x座標とy座標を渡しすと
+  /// typeとangle, x座標とy座標を渡すと
   /// Minoの現在値を取得できる
   static List<Point> getMino({
     @required MinoType minoType,

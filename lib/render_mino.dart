@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class RenderMino extends CustomPainter {
-  final double _basicLength = 20; // 1 グリッドの長さ
-  final int _verticalLength = 20;
-  final int _horizontalLength = 10;
+  final _basicLength = 20.0; // 1 グリッドの長さ
+  final _verticalLength = 20;
+  final _horizontalLength = 10;
 
   List<Point> currentMino = [];
   List<Point> futureMino = [];
