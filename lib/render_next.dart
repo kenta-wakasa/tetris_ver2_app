@@ -2,25 +2,24 @@ import 'package:flutter/material.dart';
 import 'mino.dart';
 
 class RenderNext extends CustomPainter {
+  RenderNext({
+    @required this.nextMinoTypeList,
+  });
+
   final _basicLength = 10.0;
   final _sideLength = 6;
   final _nextLenght = 6; // nextの表示個数
   final _xOffset = -2;
   final _yOffset = 4;
-  List<MinoType> nextMinoTypeList = List.filled(6, MinoType.None);
-
-  RenderNext({
-    @required this.nextMinoTypeList,
-  });
+  List<MinoType> nextMinoTypeList = List.filled(6, MinoType.none);
 
   // 実際の描画処理を行うメソッド
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
-    paint.color = Colors.brown;
-    paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 2.0;
+    final paint = Paint()
+      ..color = Colors.brown
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
 
     /// draw outer frame
     for (var i = 0; i < _nextLenght; i++) {

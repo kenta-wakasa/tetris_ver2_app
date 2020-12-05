@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 import 'mino.dart';
 
 class RenderHold extends CustomPainter {
-  final _basicLength = 10.0;
-  final _sideLength = 6;
-  final _xOffset = -2;
-  final _yOffset = 4;
-
-  MinoType holdMinoType = MinoType.None;
-  bool usedHold = false;
-
   RenderHold({
     @required this.holdMinoType,
     @required this.usedHold,
   });
 
+  final _basicLength = 10.0;
+  final _sideLength = 6;
+  final _xOffset = -2;
+  final _yOffset = 4;
+
+  MinoType holdMinoType = MinoType.none;
+
+  bool usedHold = false;
+
   // 実際の描画処理を行うメソッド
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
-    paint.color = Colors.brown;
-    paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 2.0;
+    final paint = Paint()
+      ..color = Colors.brown
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
     canvas.drawRect(
       Rect.fromLTWH(
         0,

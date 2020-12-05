@@ -5,7 +5,7 @@ class StartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.of(context).size;
-    const double _defPadding = 48.0;
+    const _defPadding = 48.0;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -15,8 +15,8 @@ class StartPage extends StatelessWidget {
               Expanded(
                 child: Container(
                   width: _size.width,
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: FittedBox(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: const FittedBox(
                     child: Text('TETRIS',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -27,13 +27,13 @@ class StartPage extends StatelessWidget {
               SizedBox(
                 width: _size.width,
                 child: RaisedButton(
-                  child: Text(
+                  child: const Text(
                     'テトリスであそぶ',
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.pushReplacement<void, void>(
                       context,
                       MaterialPageRoute(
                         builder: (context) => PlayPage(),

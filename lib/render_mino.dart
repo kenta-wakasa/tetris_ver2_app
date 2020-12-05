@@ -3,6 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class RenderMino extends CustomPainter {
+  RenderMino({
+    @required this.currentMino,
+    @required this.futureMino,
+    @required this.fixedMino,
+  });
+
   final _basicLength = 20.0; // 1 グリッドの長さ
   final _verticalLength = 20;
   final _horizontalLength = 10;
@@ -10,12 +16,6 @@ class RenderMino extends CustomPainter {
   List<Point> currentMino = [];
   List<Point> futureMino = [];
   List<Point> fixedMino = [];
-
-  RenderMino({
-    @required this.currentMino,
-    @required this.futureMino,
-    @required this.fixedMino,
-  });
 
   /// Mino を描画するための helper
   void _paintMino(Canvas canvas, Paint paint, List<Point> mino) {
@@ -34,13 +34,11 @@ class RenderMino extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
     /// フレームとグリッドの描画 ///
-
     /// draw outer frame
-    paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 2.0;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
     canvas.drawRect(
       Rect.fromLTWH(0, 0, _basicLength * _horizontalLength,
           _basicLength * _verticalLength),
@@ -51,7 +49,7 @@ class RenderMino extends CustomPainter {
     paint.strokeWidth = .5;
 
     // draw vertical grid
-    for (int index = 0; index < _horizontalLength; index++) {
+    for (var index = 0; index < _horizontalLength; index++) {
       canvas.drawLine(
         Offset(_basicLength * index, 0),
         Offset(_basicLength * index, _basicLength * _verticalLength),
@@ -60,7 +58,7 @@ class RenderMino extends CustomPainter {
     }
 
     // draw horizontal grid
-    for (int index = 0; index < _verticalLength; index++) {
+    for (var index = 0; index < _verticalLength; index++) {
       canvas.drawLine(
         Offset(_basicLength * 0, _basicLength * index),
         Offset(_basicLength * _horizontalLength, _basicLength * index),
@@ -74,18 +72,21 @@ class RenderMino extends CustomPainter {
     /// fixedMino: 固定された Mino を示す
 
     /// draw currentMino
-    paint.style = PaintingStyle.fill;
-    paint.color = Colors.redAccent;
+    paint
+      ..style = PaintingStyle.fill
+      ..color = Colors.redAccent;
     _paintMino(canvas, paint, currentMino);
 
     /// draw futureMino
-    paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 3;
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
     _paintMino(canvas, paint, futureMino);
 
     /// draw fixedMino
-    paint.style = PaintingStyle.fill;
-    paint.color = Colors.brown;
+    paint
+      ..style = PaintingStyle.fill
+      ..color = Colors.brown;
     _paintMino(canvas, paint, fixedMino);
   }
 

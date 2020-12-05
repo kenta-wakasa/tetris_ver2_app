@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'start_page.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 縦方向に画面固定
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.redAccent,
         scaffoldBackgroundColor: Colors.amberAccent,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        buttonTheme: ButtonThemeData(
+        buttonTheme: const ButtonThemeData(
           textTheme: ButtonTextTheme.accent,
           shape: RoundedRectangleBorder(
             // Dialog以外のボタンの角に影響を与えることができる

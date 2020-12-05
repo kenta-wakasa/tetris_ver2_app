@@ -21,11 +21,11 @@ class PlayModel extends ChangeNotifier {
 
   /// Mino が出る順番に関する変数
   final _generateMinoNum = 1400; // はじめに生成する Mino の個数
-  List<MinoType> _minoOrderList = []; // Mino がでる順番
+  final List<MinoType> _minoOrderList = []; // Mino がでる順番
   int _minoOrderIndex = 0; // 現在の Mino が何番目か
 
   /// Next と Hold
-  List<MinoType> nextMinoTypeList = List.filled(6, MinoType.None);
+  List<MinoType> nextMinoTypeList = List.filled(6, MinoType.none);
   MinoType holdMinoType;
 
   /// 消した行数に関する変数
@@ -33,8 +33,8 @@ class PlayModel extends ChangeNotifier {
   int deletedLinesCountBest = 0;
 
   /// currentMino に関する変数
-  MinoType _currentMinoType = MinoType.None;
-  MinoAngle _currentMinoAngle = MinoAngle.Rot_000;
+  MinoType _currentMinoType = MinoType.none;
+  MinoAngle _currentMinoAngle = MinoAngle.deg000;
   int _currentMinoXPos = 0;
   int _currentMinoYPos = 0;
 
@@ -65,8 +65,8 @@ class PlayModel extends ChangeNotifier {
     gameOver = false;
     usedHold = false;
     _minoOrderIndex = 0;
-    nextMinoTypeList = List.filled(6, MinoType.None);
-    holdMinoType = MinoType.None;
+    nextMinoTypeList = List.filled(6, MinoType.none);
+    holdMinoType = MinoType.none;
     deletedLinesCount = 0;
     countDownNum = _countDownStartNum;
     _remainingTime = _limitTimeSec;
@@ -82,15 +82,14 @@ class PlayModel extends ChangeNotifier {
   void _generateMinoOrderList() {
     while (_minoOrderList.length < _generateMinoNum) {
       final seedMinoIndexList = [
-        MinoType.I_Mino,
-        MinoType.O_Mino,
-        MinoType.T_Mino,
-        MinoType.J_Mino,
-        MinoType.L_Mino,
-        MinoType.S_Mino,
-        MinoType.Z_Mino,
-      ];
-      seedMinoIndexList.shuffle();
+        MinoType.iMino,
+        MinoType.oMino,
+        MinoType.tMino,
+        MinoType.jMino,
+        MinoType.lMino,
+        MinoType.sMino,
+        MinoType.zMino,
+      ]..shuffle();
       _minoOrderList.addAll(seedMinoIndexList);
     }
   }
@@ -101,7 +100,7 @@ class PlayModel extends ChangeNotifier {
     // 1秒ごとにカウントを減らす
     while (countDownNum > -1) {
       notifyListeners();
-      await Future.delayed(Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       countDownNum--;
     }
     _generateMino();
@@ -114,7 +113,7 @@ class PlayModel extends ChangeNotifier {
 
     /// ベストスコアを取り出す
     final prefs = await SharedPreferences.getInstance();
-    deletedLinesCountBest = prefs.get('deletedLinesCountBest') ?? 0;
+    deletedLinesCountBest = prefs.getInt('deletedLinesCountBest') ?? 0;
 
     /// Mino が 落下するまでの待ちフレーム数  =  fps  *  指定した秒数
     final _thresholdFrameForDropMino = (fps * _thresholdSecForDropMino).toInt();
@@ -175,8 +174,8 @@ class PlayModel extends ChangeNotifier {
         gameOver = true;
       }
 
-      var next = 1000000 * frame ~/ fps;
-      await Future.delayed(
+      final next = 1000000 * frame ~/ fps;
+      await Future<void>.delayed(
         Duration(microseconds: next - sw.elapsedMicroseconds),
       );
     }
@@ -194,7 +193,7 @@ class PlayModel extends ChangeNotifier {
   /// 新しい Mino を生成する
   void _generateMino() {
     _currentMinoType = _minoOrderList[_minoOrderIndex];
-    _currentMinoAngle = MinoAngle.Rot_000;
+    _currentMinoAngle = MinoAngle.deg000;
     _currentMinoXPos = 0;
     _currentMinoYPos = 0;
     usedHold = false;
@@ -296,12 +295,12 @@ class PlayModel extends ChangeNotifier {
     // 各列で 10 個 point が存在する列を消す
     // 長さ 20 の 0 詰めしたリストに個数を格納していく
     // pointCountList[n]　==  n 列目に存在する point の個数
-    var pointCountList = List.filled(20, 0);
+    final pointCountList = List.filled(20, 0);
 
     /// n 行目に存在する poin を数える
     for (final point in fixedMino) {
       if (point.y >= 0 && point.y < 20) {
-        pointCountList[point.y]++;
+        pointCountList[point.y.toInt()]++;
       }
     }
 
@@ -385,34 +384,66 @@ class PlayModel extends ChangeNotifier {
     /// 参考: https://tetrisch.github.io/main/srs.html
     if (_onCollisionEnter(tmpMino)) {
       /// I_Mino の場合
-      if (_currentMinoType == MinoType.I_Mino) {
+      if (_currentMinoType == MinoType.iMino) {
         // 回転後の角度によって移動させる順番が分岐する
         // 順に移動させられるかを確認し
         // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
-          case MinoAngle.Rot_000:
-            if (moveMino(-2, 0)) return;
-            if (moveMino(1, 0)) return;
-            if (moveMino(1, 2)) return;
-            if (moveMino(-2, -1)) return;
+          case MinoAngle.deg000:
+            if (moveMino(-2, 0)) {
+              return;
+            }
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(1, 2)) {
+              return;
+            }
+            if (moveMino(-2, -1)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_090:
-            if (moveMino(2, 0)) return;
-            if (moveMino(-1, 0)) return;
-            if (moveMino(2, -1)) return;
-            if (moveMino(-1, 2)) return;
+          case MinoAngle.deg090:
+            if (moveMino(2, 0)) {
+              return;
+            }
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(2, -1)) {
+              return;
+            }
+            if (moveMino(-1, 2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_180:
-            if (moveMino(-1, 0)) return;
-            if (moveMino(2, 0)) return;
-            if (moveMino(-1, -2)) return;
-            if (moveMino(2, -1)) return;
+          case MinoAngle.deg180:
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(2, 0)) {
+              return;
+            }
+            if (moveMino(-1, -2)) {
+              return;
+            }
+            if (moveMino(2, -1)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_270:
-            if (moveMino(2, 0)) return;
-            if (moveMino(-1, 0)) return;
-            if (moveMino(2, 1)) return;
-            if (moveMino(1, -2)) return;
+          case MinoAngle.deg270:
+            if (moveMino(2, 0)) {
+              return;
+            }
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(2, 1)) {
+              return;
+            }
+            if (moveMino(1, -2)) {
+              return;
+            }
             break;
         }
 
@@ -422,29 +453,61 @@ class PlayModel extends ChangeNotifier {
         // 順に移動させられるかを確認し
         // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
-          case MinoAngle.Rot_000:
-            if (moveMino(-1, 0)) return;
-            if (moveMino(-1, 1)) return;
-            if (moveMino(0, -2)) return;
-            if (moveMino(-1, -2)) return;
+          case MinoAngle.deg000:
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(-1, 1)) {
+              return;
+            }
+            if (moveMino(0, -2)) {
+              return;
+            }
+            if (moveMino(-1, -2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_090:
-            if (moveMino(1, 0)) return;
-            if (moveMino(1, -1)) return;
-            if (moveMino(0, 2)) return;
-            if (moveMino(1, 2)) return;
+          case MinoAngle.deg090:
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(1, -1)) {
+              return;
+            }
+            if (moveMino(0, 2)) {
+              return;
+            }
+            if (moveMino(1, 2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_180:
-            if (moveMino(1, 0)) return;
-            if (moveMino(1, 1)) return;
-            if (moveMino(0, -2)) return;
-            if (moveMino(1, -2)) return;
+          case MinoAngle.deg180:
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(1, 1)) {
+              return;
+            }
+            if (moveMino(0, -2)) {
+              return;
+            }
+            if (moveMino(1, -2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_270:
-            if (moveMino(-1, 0)) return;
-            if (moveMino(-1, -1)) return;
-            if (moveMino(0, 2)) return;
-            if (moveMino(-1, 2)) return;
+          case MinoAngle.deg270:
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(-1, -1)) {
+              return;
+            }
+            if (moveMino(0, 2)) {
+              return;
+            }
+            if (moveMino(-1, 2)) {
+              return;
+            }
             break;
         }
       }
@@ -474,34 +537,66 @@ class PlayModel extends ChangeNotifier {
     /// 参考: https://tetrisch.github.io/main/srs.html
     if (_onCollisionEnter(tmpMino)) {
       /// I_Mino の場合
-      if (_currentMinoType == MinoType.I_Mino) {
+      if (_currentMinoType == MinoType.iMino) {
         // 回転後の角度によって移動させる順番が分岐する
         // 順に移動させられるかを確認し
         // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
-          case MinoAngle.Rot_000:
-            if (moveMino(2, 0)) return;
-            if (moveMino(-1, 0)) return;
-            if (moveMino(2, -1)) return;
-            if (moveMino(-1, 2)) return;
+          case MinoAngle.deg000:
+            if (moveMino(2, 0)) {
+              return;
+            }
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(2, -1)) {
+              return;
+            }
+            if (moveMino(-1, 2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_090:
-            if (moveMino(-1, 0)) return;
-            if (moveMino(2, 0)) return;
-            if (moveMino(-1, -2)) return;
-            if (moveMino(2, 1)) return;
+          case MinoAngle.deg090:
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(2, 0)) {
+              return;
+            }
+            if (moveMino(-1, -2)) {
+              return;
+            }
+            if (moveMino(2, 1)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_180:
-            if (moveMino(1, 0)) return;
-            if (moveMino(-2, 0)) return;
-            if (moveMino(-2, 1)) return;
-            if (moveMino(1, -2)) return;
+          case MinoAngle.deg180:
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(-2, 0)) {
+              return;
+            }
+            if (moveMino(-2, 1)) {
+              return;
+            }
+            if (moveMino(1, -2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_270:
-            if (moveMino(1, 0)) return;
-            if (moveMino(-2, 0)) return;
-            if (moveMino(1, 2)) return;
-            if (moveMino(-2, -1)) return;
+          case MinoAngle.deg270:
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(-2, 0)) {
+              return;
+            }
+            if (moveMino(1, 2)) {
+              return;
+            }
+            if (moveMino(-2, -1)) {
+              return;
+            }
             break;
         }
 
@@ -511,29 +606,61 @@ class PlayModel extends ChangeNotifier {
         // 順に移動させられるかを確認し
         // 移動できた時点で return で終了する
         switch (_currentMinoAngle) {
-          case MinoAngle.Rot_000:
-            if (moveMino(1, 0)) return;
-            if (moveMino(1, 1)) return;
-            if (moveMino(0, -2)) return;
-            if (moveMino(1, -2)) return;
+          case MinoAngle.deg000:
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(1, 1)) {
+              return;
+            }
+            if (moveMino(0, -2)) {
+              return;
+            }
+            if (moveMino(1, -2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_090:
-            if (moveMino(1, 0)) return;
-            if (moveMino(1, -1)) return;
-            if (moveMino(0, 2)) return;
-            if (moveMino(1, 2)) return;
+          case MinoAngle.deg090:
+            if (moveMino(1, 0)) {
+              return;
+            }
+            if (moveMino(1, -1)) {
+              return;
+            }
+            if (moveMino(0, 2)) {
+              return;
+            }
+            if (moveMino(1, 2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_180:
-            if (moveMino(-1, 0)) return;
-            if (moveMino(-1, 1)) return;
-            if (moveMino(0, -2)) return;
-            if (moveMino(-1, -2)) return;
+          case MinoAngle.deg180:
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(-1, 1)) {
+              return;
+            }
+            if (moveMino(0, -2)) {
+              return;
+            }
+            if (moveMino(-1, -2)) {
+              return;
+            }
             break;
-          case MinoAngle.Rot_270:
-            if (moveMino(-1, 0)) return;
-            if (moveMino(-1, -1)) return;
-            if (moveMino(0, 2)) return;
-            if (moveMino(-1, 2)) return;
+          case MinoAngle.deg270:
+            if (moveMino(-1, 0)) {
+              return;
+            }
+            if (moveMino(-1, -1)) {
+              return;
+            }
+            if (moveMino(0, 2)) {
+              return;
+            }
+            if (moveMino(-1, 2)) {
+              return;
+            }
             break;
         }
       }
@@ -547,7 +674,7 @@ class PlayModel extends ChangeNotifier {
   }
 
   /// 下フリック操作で一気に Mino を落下させる
-  hardDrop() {
+  void hardDrop() {
     currentMino = [...futureMino]; // 一気にMinoを落下させる
     _fixMino();
     _deleteLine();
@@ -557,16 +684,16 @@ class PlayModel extends ChangeNotifier {
 
   /// 上フリックで Mino を Hold する
   /// すでに Hold している Mino がある場合は入れ替える
-  holdMino() {
+  void holdMino() {
     // Minoが生成されてからまだ一度も Hold が使われていない場合
     if (!usedHold) {
       // すでに Hold されている Mino がある場合
       // currentMino と holdMino を入れ替える
-      if (holdMinoType != MinoType.None) {
-        var tmpMinoType = _currentMinoType; // 一時的に保持
+      if (holdMinoType != MinoType.none) {
+        final tmpMinoType = _currentMinoType; // 一時的に保持
         _currentMinoType = holdMinoType;
         holdMinoType = tmpMinoType;
-        _currentMinoAngle = MinoAngle.Rot_000;
+        _currentMinoAngle = MinoAngle.deg000;
         _currentMinoXPos = 0;
         _currentMinoYPos = 0;
         _updateCurrentMino();

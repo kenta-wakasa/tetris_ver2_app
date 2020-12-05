@@ -3,10 +3,11 @@ import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'play_model.dart';
 import 'render_hold.dart';
-import 'render_next.dart';
 import 'render_mino.dart';
+import 'render_next.dart';
 import 'start_page.dart';
 
 class PlayPage extends StatelessWidget {
@@ -15,14 +16,14 @@ class PlayPage extends StatelessWidget {
     /// ジェスチャー操作で使用する変数を定義
     final _size = MediaQuery.of(context).size;
     final _centerPos = _size.width / 2;
-    final _dragThreshold = 20;
-    final _flickThreshold = 30;
-    final fps = 30;
-    double _deltaLeft = 0;
-    double _deltaRight = 0;
-    double _deltaDown = 0;
-    bool _usedHardDrop = false;
-    bool _usedHold = false;
+    const _dragThreshold = 20;
+    const _flickThreshold = 30;
+    const fps = 30;
+    var _deltaLeft = 0.0;
+    var _deltaRight = 0.0;
+    var _deltaDown = 0.0;
+    var _usedHardDrop = false;
+    var _usedHold = false;
 
     return ChangeNotifierProvider<PlayModel>(
       create: (_) => PlayModel()..mainLoop(fps),
@@ -30,7 +31,7 @@ class PlayPage extends StatelessWidget {
         builder: (context, model, child) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(
+              title: const Text(
                 'TETRIS',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
@@ -46,9 +47,9 @@ class PlayPage extends StatelessWidget {
                   onPanDown: (_) {
                     _usedHardDrop = false;
                     _usedHold = false;
-                    _deltaRight = 0;
-                    _deltaLeft = 0;
-                    _deltaDown = 0;
+                    _deltaRight = 0.0;
+                    _deltaLeft = 0.0;
+                    _deltaDown = 0.0;
                   },
 
                   /// タップアップで 回転処理
@@ -109,16 +110,14 @@ class PlayPage extends StatelessWidget {
 
                 /// 残り時間の表示
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: _size.width,
                     child: Text(
-                      "TIME    " +
-                          model.remainingTimeMin.toString() +
-                          ":" +
-                          model.remainingTimeSec.toString().padLeft(2, '0'),
+                      // ignore: lines_longer_than_80_chars
+                      'TIME    ${model.remainingTimeMin}:${model.remainingTimeSec.toString().padLeft(2, '0')}',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.normal,
                         fontFeatures: [FontFeature.tabularFigures()], // 等幅になる
@@ -139,7 +138,7 @@ class PlayPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('HOLD'),
+                            const Text('HOLD'),
                             CustomPaint(
                               painter: RenderHold(
                                 usedHold: model.usedHold,
@@ -156,7 +155,7 @@ class PlayPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(""),
+                            const Text(''),
                             CustomPaint(
                               painter: RenderMino(
                                 currentMino: model.currentMino,
@@ -174,7 +173,7 @@ class PlayPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('NEXT'),
+                            const Text('NEXT'),
                             CustomPaint(
                               painter: RenderNext(
                                 nextMinoTypeList: model.nextMinoTypeList,
@@ -195,7 +194,7 @@ class PlayPage extends StatelessWidget {
                           child: Text(
                             // 0以外なら数字を 0ならGO!! を表示
                             model.countDownNum != 0
-                                ? "${model.countDownNum}"
+                                ? '${model.countDownNum}'
                                 : 'GO!!',
                             style: TextStyle(
                               fontSize: 100,
@@ -214,33 +213,31 @@ class PlayPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 8,
                       ),
                       Text(
-                        "LINES " +
-                            model.deletedLinesCount.toString().padLeft(4, '0'),
-                        style: TextStyle(
+                        // ignore: lines_longer_than_80_chars
+                        'LINES ${model.deletedLinesCount.toString().padLeft(4, '0')}',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.normal,
                           fontFeatures: [FontFeature.tabularFigures()],
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 8,
                       ),
                       Text(
-                        "BEST  " +
-                            model.deletedLinesCountBest
-                                .toString()
-                                .padLeft(4, '0'),
-                        style: TextStyle(
+                        // ignore: lines_longer_than_80_chars
+                        'BEST  ${model.deletedLinesCountBest.toString().padLeft(4, '0')}',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.normal,
                           fontFeatures: [FontFeature.tabularFigures()],
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 48,
                       ),
                     ],
@@ -256,31 +253,31 @@ class PlayPage extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
+                              const Text(
                                 'Game Over',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     fontSize: 36),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 24,
                               ),
                               Text(
                                 '${model.deletedLinesCount}ライン達成!!',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     fontSize: 24),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 240,
                               ),
                               SizedBox(
                                 width: 240,
                                 child: RaisedButton(
                                   color: Colors.redAccent,
-                                  child: Text(
+                                  child: const Text(
                                     'もう一度あそぶ',
                                     style: TextStyle(
                                       color: Colors.white,
@@ -288,7 +285,7 @@ class PlayPage extends StatelessWidget {
                                     ),
                                   ),
                                   onPressed: () {
-                                    Navigator.pushReplacement(
+                                    Navigator.pushReplacement<void, void>(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => PlayPage(),
@@ -297,14 +294,14 @@ class PlayPage extends StatelessWidget {
                                   },
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 12,
                               ),
                               SizedBox(
                                 width: 240,
                                 child: RaisedButton(
                                   color: Colors.redAccent,
-                                  child: Text(
+                                  child: const Text(
                                     'タイトル画面にもどる',
                                     style: TextStyle(
                                       color: Colors.white,
@@ -312,7 +309,7 @@ class PlayPage extends StatelessWidget {
                                     ),
                                   ),
                                   onPressed: () {
-                                    Navigator.pushReplacement(
+                                    Navigator.pushReplacement<void, void>(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => StartPage(),
@@ -321,7 +318,7 @@ class PlayPage extends StatelessWidget {
                                   },
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 56,
                               ),
                             ],
