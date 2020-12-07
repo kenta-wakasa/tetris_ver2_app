@@ -42,9 +42,9 @@ class PlayModel extends ChangeNotifier {
   /// currentMino: 現在操作している Mino
   /// futureMino: currentMino の落下位置
   /// frozenMino: 固定された Mino を示す
-  List<Point> currentMino = [];
-  List<Point> futureMino = [];
-  List<Point> frozenMino = [];
+  List<Point<int>> currentMino = <Point<int>>[];
+  List<Point<int>> futureMino = <Point<int>>[];
+  List<Point<int>> frozenMino = <Point<int>>[];
 
   /// 各種 フラグ
   bool gameOver = false; // GameOverになったか
@@ -294,7 +294,7 @@ class PlayModel extends ChangeNotifier {
     /// n 行目に存在する poin を数える
     for (final point in frozenMino) {
       if (point.y >= 0 && point.y < _verticalLength) {
-        pointCountList[point.y.toInt()]++;
+        pointCountList[point.y]++;
       }
     }
 

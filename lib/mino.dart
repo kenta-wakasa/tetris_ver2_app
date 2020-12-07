@@ -8,14 +8,14 @@ enum MinoAngle { deg000, deg090, deg180, deg270 }
 class Mino {
   /// typeとangle, x座標とy座標を渡すと
   /// Minoの現在値を取得できる
-  static List<Point> getMino({
+  static List<Point<int>> getMino({
     @required MinoType minoType,
     MinoAngle minoAngle = MinoAngle.deg000,
     int dx = 0,
     int dy = 0,
   }) {
-    var _mino = <Point>[];
-    final _minoWithOffset = <Point>[];
+    var _mino = <Point<int>>[];
+    final _minoWithOffset = <Point<int>>[];
 
     /// Mino の初期位置を定義する
     /// 図は I_Mino, Rot_000 の場合
@@ -39,34 +39,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(5, -1),
-              const Point(6, -1),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
+              const Point<int>(6, -1),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(4, 1),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(4, 1),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(3, 0),
-              const Point(4, 0),
-              const Point(5, 0),
-              const Point(6, 0),
+              const Point<int>(3, 0),
+              const Point<int>(4, 0),
+              const Point<int>(5, 0),
+              const Point<int>(6, 0),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(5, -2),
-              const Point(5, -1),
-              const Point(5, 0),
-              const Point(5, 1),
+              const Point<int>(5, -2),
+              const Point<int>(5, -1),
+              const Point<int>(5, 0),
+              const Point<int>(5, 1),
             ];
             break;
         }
@@ -77,34 +77,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(4, -1),
-              const Point(4, -2),
-              const Point(5, -1),
-              const Point(5, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, -2),
+              const Point<int>(5, -1),
+              const Point<int>(5, -2),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(4, -1),
-              const Point(4, -2),
-              const Point(5, -1),
-              const Point(5, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, -2),
+              const Point<int>(5, -1),
+              const Point<int>(5, -2),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(4, -1),
-              const Point(4, -2),
-              const Point(5, -1),
-              const Point(5, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, -2),
+              const Point<int>(5, -1),
+              const Point<int>(5, -2),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(4, -1),
-              const Point(4, -2),
-              const Point(5, -1),
-              const Point(5, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, -2),
+              const Point<int>(5, -1),
+              const Point<int>(5, -2),
             ];
             break;
         }
@@ -115,34 +115,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(4, -2),
-              const Point(5, -1),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(4, -2),
+              const Point<int>(5, -1),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, -0),
+              const Point<int>(3, -1),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, -0),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(4, 0),
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(5, -1),
+              const Point<int>(4, 0),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(5, -1),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(5, -1),
             ];
             break;
         }
@@ -153,34 +153,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(3, -2),
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(5, -1),
+              const Point<int>(3, -2),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(3, 0),
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, 0),
+              const Point<int>(3, 0),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(5, -1),
-              const Point(5, 0),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
+              const Point<int>(5, 0),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(5, -2),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(5, -2),
             ];
             break;
         }
@@ -191,34 +191,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(5, -1),
-              const Point(5, -2),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
+              const Point<int>(5, -2),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(3, -2),
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, 0),
+              const Point<int>(3, -2),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(3, -1),
-              const Point(3, 0),
-              const Point(4, -1),
-              const Point(5, -1),
+              const Point<int>(3, -1),
+              const Point<int>(3, 0),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(5, 0),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(5, 0),
             ];
             break;
         }
@@ -229,34 +229,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(5, -2),
+              const Point<int>(3, -1),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(5, -2),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(3, -2),
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(4, 0),
+              const Point<int>(3, -2),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(3, 0),
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(5, -1),
+              const Point<int>(3, 0),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(5, -1),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(5, -1),
-              const Point(5, 0),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
+              const Point<int>(5, 0),
             ];
             break;
         }
@@ -267,34 +267,34 @@ class Mino {
         switch (minoAngle) {
           case MinoAngle.deg000:
             _mino = [
-              const Point(3, -2),
-              const Point(4, -2),
-              const Point(4, -1),
-              const Point(5, -1),
+              const Point<int>(3, -2),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
+              const Point<int>(5, -1),
             ];
             break;
           case MinoAngle.deg090:
             _mino = [
-              const Point(3, -1),
-              const Point(3, 0),
-              const Point(4, -2),
-              const Point(4, -1),
+              const Point<int>(3, -1),
+              const Point<int>(3, 0),
+              const Point<int>(4, -2),
+              const Point<int>(4, -1),
             ];
             break;
           case MinoAngle.deg180:
             _mino = [
-              const Point(3, -1),
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(5, 0),
+              const Point<int>(3, -1),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(5, 0),
             ];
             break;
           case MinoAngle.deg270:
             _mino = [
-              const Point(4, -1),
-              const Point(4, 0),
-              const Point(5, -2),
-              const Point(5, -1),
+              const Point<int>(4, -1),
+              const Point<int>(4, 0),
+              const Point<int>(5, -2),
+              const Point<int>(5, -1),
             ];
             break;
         }
@@ -307,7 +307,7 @@ class Mino {
 
     /// オフセットを指定
     for (final point in _mino) {
-      _minoWithOffset.add(Point(point.x + dx, point.y + dy));
+      _minoWithOffset.add(Point<int>(point.x + dx, point.y + dy));
     }
     return _minoWithOffset;
   }
