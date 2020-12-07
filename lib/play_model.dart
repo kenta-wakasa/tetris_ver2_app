@@ -274,8 +274,8 @@ class PlayModel extends ChangeNotifier {
         return true;
       }
       // 固定されたMinoとの衝突判定
-      for (final fixedPoint in frozenMino) {
-        if (fixedPoint == point) {
+      for (final frozenPoint in frozenMino) {
+        if (frozenPoint == point) {
           return true;
         }
       }
