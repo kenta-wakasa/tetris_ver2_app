@@ -357,6 +357,9 @@ class PlayModel extends ChangeNotifier {
     }
   }
 
+  /// 回転したとき衝突判定があった場合
+  /// SRS(スーパーローテーションシステム)に従い Mino を移動させる
+  /// 参考: https://tetrisch.github.io/main/srs.html
   /// Mino の回転についての関数はひとつにまとめられそうだが
   /// SRS(スーパーローテーションシステム)は
   /// 時計回りと半時計周りで挙動が異なるため分割している
@@ -373,9 +376,6 @@ class PlayModel extends ChangeNotifier {
       dy: _currentMinoYPos,
     );
 
-    /// 回転したとき衝突判定があっ他場合
-    /// SRS(スーパーローテーションシステム)に従い Mino を移動させる
-    /// 参考: https://tetrisch.github.io/main/srs.html
     if (_hasCollision(tmpMino)) {
       /// I_Mino の場合
       if (_currentMinoType == MinoType.iMino) {
@@ -479,9 +479,6 @@ class PlayModel extends ChangeNotifier {
       dy: _currentMinoYPos,
     );
 
-    /// 回転したとき衝突判定があっ他場合
-    /// SRS(スーパーローテーションシステム)に従い Mino を移動させる
-    /// 参考: https://tetrisch.github.io/main/srs.html
     if (_hasCollision(tmpMino)) {
       /// I_Mino の場合
       if (_currentMinoType == MinoType.iMino) {
