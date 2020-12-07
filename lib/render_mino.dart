@@ -6,7 +6,7 @@ class RenderMino extends CustomPainter {
   RenderMino({
     @required this.currentMino,
     @required this.futureMino,
-    @required this.fixedMino,
+    @required this.frozenMino,
   });
 
   final _basicLength = 20.0; // 1 グリッドの長さ
@@ -15,7 +15,7 @@ class RenderMino extends CustomPainter {
 
   List<Point> currentMino = [];
   List<Point> futureMino = [];
-  List<Point> fixedMino = [];
+  List<Point> frozenMino = [];
 
   /// Mino を描画するための helper
   void _paintMino(Canvas canvas, Paint paint, List<Point> mino) {
@@ -69,7 +69,7 @@ class RenderMino extends CustomPainter {
     /// 3種類の Mino の描画 ///
     /// currentMino: 現在操作している Mino
     /// futureMino: currentMino の落下位置
-    /// fixedMino: 固定された Mino を示す
+    /// frozenMino: 固定された Mino を示す
 
     /// draw currentMino
     paint
@@ -83,11 +83,11 @@ class RenderMino extends CustomPainter {
       ..strokeWidth = 3;
     _paintMino(canvas, paint, futureMino);
 
-    /// draw fixedMino
+    /// draw frozenMino
     paint
       ..style = PaintingStyle.fill
       ..color = Colors.brown;
-    _paintMino(canvas, paint, fixedMino);
+    _paintMino(canvas, paint, frozenMino);
   }
 
   // 再描画のタイミングで呼ばれるメソッド

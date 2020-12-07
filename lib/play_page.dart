@@ -160,7 +160,7 @@ class PlayPage extends StatelessWidget {
                               painter: RenderMino(
                                 currentMino: model.currentMino,
                                 futureMino: model.futureMino,
-                                fixedMino: model.fixedMino,
+                                frozenMino: model.frozenMino,
                               ),
                             ),
                           ],
